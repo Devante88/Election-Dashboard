@@ -4,40 +4,40 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Elections Intelligence Center — Harris County local election operations dashboard.">
-  <title>ELECTIONS INTELLIGENCE CENTER // HARRIS COUNTY OPS</title>
+  <title>ELECTIONS INTELLIGENCE CENTER // HARRIS + FORT BEND COUNTY OPS</title>
   <style>
     /* ================================================================
        DESIGN TOKENS — OPS PALETTE
     ================================================================ */
     :root {
-      --bg:           #010c06;
-      --bg-2:         #000a05;
-      --surface:      #020e08;
-      --surface-hi:   #041209;
-      --surface-soft: #030f07;
-      --text:         #c4f0d4;
-      --text-bright:  #e8fff0;
-      --muted:        #74a886;
-      --muted-2:      #527a64;
-      --line:         rgba(0,255,136,0.12);
-      --line-hi:      rgba(0,255,136,0.22);
-      --brand:        #7ee8a2;
-      --brand-dim:    #5cc48a;
-      --brand-soft:   rgba(126,232,162,0.08);
-      --amber:        #ffb600;
-      --amber-dim:    #cc9200;
-      --amber-soft:   rgba(255,182,0,0.08);
-      --red:          #ff5555;
-      --red-dim:      #cc3333;
-      --red-soft:     rgba(255,85,85,0.08);
+      --bg:           #080e1c;
+      --bg-2:         #060b17;
+      --surface:      #0c1424;
+      --surface-hi:   #101a2e;
+      --surface-soft: #0e1828;
+      --text:         #c8d8f0;
+      --text-bright:  #e8f0fc;
+      --muted:        #6e8ab0;
+      --muted-2:      #4a6080;
+      --line:         rgba(78,158,255,0.14);
+      --line-hi:      rgba(78,158,255,0.26);
+      --brand:        #4e9eff;
+      --brand-dim:    #3a82e8;
+      --brand-soft:   rgba(78,158,255,0.09);
+      --amber:        #f0a500;
+      --amber-dim:    #c48800;
+      --amber-soft:   rgba(240,165,0,0.09);
+      --red:          #f05050;
+      --red-dim:      #c43030;
+      --red-soft:     rgba(240,80,80,0.09);
       --blue:         #4dc8ff;
       --blue-dim:     #0090cc;
-      --blue-soft:    rgba(77,200,255,0.08);
-      --purple:       #c090ff;
-      --purple-soft:  rgba(192,144,255,0.08);
-      --glow-sm:   0 0 10px rgba(126,232,162,0.12);
-      --glow:      0 0 20px rgba(126,232,162,0.18);
-      --glow-lg:   0 0 40px rgba(126,232,162,0.24);
+      --blue-soft:    rgba(77,200,255,0.09);
+      --purple:       #a885f0;
+      --purple-soft:  rgba(168,133,240,0.09);
+      --glow-sm:   0 0 10px rgba(78,158,255,0.14);
+      --glow:      0 0 20px rgba(78,158,255,0.22);
+      --glow-lg:   0 0 40px rgba(78,158,255,0.30);
       --radius:    4px;
       --radius-md: 8px;
       --font-mono: 'JetBrains Mono','Cascadia Code','SF Mono','Consolas','Liberation Mono','Courier New',monospace;
@@ -60,10 +60,10 @@
       color: var(--text);
       background-color: var(--bg);
       background-image:
-        linear-gradient(rgba(0,255,136,0.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,136,0.018) 1px, transparent 1px),
-        radial-gradient(ellipse at 15% 0%, rgba(0,255,136,0.05), transparent 55%),
-        radial-gradient(ellipse at 85% 0%, rgba(0,180,255,0.03), transparent 50%);
+        linear-gradient(rgba(78,158,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(78,158,255,0.04) 1px, transparent 1px),
+        radial-gradient(ellipse at 15% 0%, rgba(78,158,255,0.07), transparent 55%),
+        radial-gradient(ellipse at 85% 0%, rgba(100,120,200,0.05), transparent 50%);
       background-size: 48px 48px, 48px 48px, 100% 100%, 100% 100%;
       line-height: 1.6;
     }
@@ -93,8 +93,8 @@
       left: 0; right: 0;
       z-index: 9980;
       padding: 5px 16px;
-      background: rgba(1,12,6,0.99);
-      color: rgba(126,232,162,0.5);
+      background: rgba(6,11,23,0.99);
+      color: rgba(78,158,255,0.55);
       font-size: 0.65rem;
       font-weight: 700;
       letter-spacing: 0.18em;
@@ -112,7 +112,7 @@
       top: 26px;
       z-index: 500;
       border-bottom: 1px solid var(--line);
-      background: rgba(1,12,6,0.97);
+      background: rgba(8,14,28,0.97);
       backdrop-filter: blur(18px);
     }
 
@@ -219,9 +219,9 @@
       text-transform: uppercase;
       transition: background 0.15s, box-shadow 0.15s;
     }
-    .btn:hover { background: rgba(0,255,136,0.13); box-shadow: var(--glow-sm); text-decoration: none; }
-    .btn.primary { color: #011508; background: var(--brand); border-color: var(--brand); font-weight: 800; }
-    .btn.primary:hover { background: #a0f0bc; box-shadow: var(--glow); }
+    .btn:hover { background: rgba(78,158,255,0.14); box-shadow: var(--glow-sm); text-decoration: none; }
+    .btn.primary { color: #03091a; background: var(--brand); border-color: var(--brand); font-weight: 800; }
+    .btn.primary:hover { background: #80b8ff; box-shadow: var(--glow); }
     .btn.ghost { background: transparent; border-color: transparent; }
     .btn.ghost:hover { background: var(--brand-soft); border-color: var(--line); box-shadow: none; }
 
@@ -233,7 +233,7 @@
       align-items: center;
       overflow: hidden;
       border-bottom: 1px solid var(--line);
-      background: rgba(126,232,162,0.025);
+      background: rgba(78,158,255,0.03);
       height: 34px;
       white-space: nowrap;
       font-size: 0.7rem;
@@ -251,7 +251,7 @@
       font-weight: 700;
       font-size: 0.68rem;
       letter-spacing: 0.12em;
-      background: rgba(126,232,162,0.05);
+      background: rgba(78,158,255,0.06);
     }
     .ticker-clip { overflow: hidden; flex: 1; }
     .ticker-track {
@@ -318,13 +318,13 @@
     }
     .panel::before {
       top: 7px; left: 7px;
-      border-top: 1px solid rgba(126,232,162,0.35);
-      border-left: 1px solid rgba(126,232,162,0.35);
+      border-top: 1px solid rgba(78,158,255,0.35);
+      border-left: 1px solid rgba(78,158,255,0.35);
     }
     .panel::after {
       bottom: 7px; right: 7px;
-      border-bottom: 1px solid rgba(126,232,162,0.35);
-      border-right: 1px solid rgba(126,232,162,0.35);
+      border-bottom: 1px solid rgba(78,158,255,0.35);
+      border-right: 1px solid rgba(78,158,255,0.35);
     }
     .panel-head {
       display: flex;
@@ -427,13 +427,13 @@
       position: absolute;
       width: 16px; height: 16px;
     }
-    .status-card::before { top: 6px; left: 6px; border-top: 1px solid rgba(126,232,162,0.3); border-left: 1px solid rgba(126,232,162,0.3); }
-    .status-card::after  { bottom: 6px; right: 6px; border-bottom: 1px solid rgba(126,232,162,0.3); border-right: 1px solid rgba(126,232,162,0.3); }
+    .status-card::before { top: 6px; left: 6px; border-top: 1px solid rgba(78,158,255,0.3); border-left: 1px solid rgba(78,158,255,0.3); }
+    .status-card::after  { bottom: 6px; right: 6px; border-bottom: 1px solid rgba(78,158,255,0.3); border-right: 1px solid rgba(78,158,255,0.3); }
 
     .status-card-head {
       padding: 14px 18px;
       border-bottom: 1px solid var(--line);
-      background: rgba(126,232,162,0.025);
+      background: rgba(78,158,255,0.04);
       font-size: 0.68rem;
       font-weight: 700;
       letter-spacing: 0.14em;
@@ -462,7 +462,7 @@
     .rep-bar-wrap { padding: 16px 18px 18px; border-top: 1px solid var(--line); }
     .rep-bar-label { display: flex; justify-content: space-between; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
     .rep-bar-label span:last-child { color: var(--brand); font-weight: 700; }
-    .rep-bar-track { height: 6px; border-radius: 999px; background: rgba(0,255,136,0.1); overflow: hidden; }
+    .rep-bar-track { height: 6px; border-radius: 999px; background: rgba(78,158,255,0.12); overflow: hidden; }
     .rep-bar-fill  { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--brand-dim), var(--brand)); transition: width 0.7s cubic-bezier(0.4,0,0.2,1); }
 
     /* ================================================================
@@ -481,8 +481,8 @@
       position: absolute;
       top: 5px; left: 5px;
       width: 12px; height: 12px;
-      border-top: 1px solid rgba(0,255,136,0.3);
-      border-left: 1px solid rgba(0,255,136,0.3);
+      border-top: 1px solid rgba(78,158,255,0.3);
+      border-left: 1px solid rgba(78,158,255,0.3);
     }
     .metric small { display: block; color: var(--muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
     .metric strong { display: block; margin-top: 6px; font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-weight: 700; letter-spacing: 0.02em; color: var(--brand); line-height: 1; }
@@ -537,7 +537,7 @@
     }
     select:focus, input[type="search"]:focus {
       border-color: var(--brand-dim);
-      box-shadow: 0 0 0 2px rgba(0,255,136,0.1);
+      box-shadow: 0 0 0 2px rgba(78,158,255,0.15);
       outline: none;
     }
     select option { background: var(--surface); }
@@ -560,7 +560,7 @@
     th:first-child { border-radius: var(--radius) 0 0 0; }
     th:last-child  { border-radius: 0 var(--radius) 0 0; }
     tr:last-child td { border-bottom: 0; }
-    tbody tr:hover td { background: rgba(0,255,136,0.03); }
+    tbody tr:hover td { background: rgba(78,158,255,0.04); }
 
     .sort-btn {
       padding: 0; border: 0;
@@ -577,7 +577,7 @@
     .bar-track {
       height: 5px;
       border-radius: 999px;
-      background: rgba(0,255,136,0.08);
+      background: rgba(78,158,255,0.12);
       overflow: hidden;
     }
     .bar-fill {
@@ -589,7 +589,7 @@
 
     .lead-badge { display: inline-flex; align-items: center; gap: 5px; color: var(--brand); font-weight: 700; }
     .muted-text { color: var(--muted); }
-    .totals-row td { font-weight: 700; border-top: 1px solid var(--line-hi); background: rgba(0,255,136,0.04); }
+    .totals-row td { font-weight: 700; border-top: 1px solid var(--line-hi); background: rgba(78,158,255,0.05); }
 
     /* Heat level badges */
     .heat {
@@ -605,7 +605,7 @@
     .heat.critical { color: var(--red);    background: var(--red-soft);    border: 1px solid rgba(255,59,59,0.25);    animation: heat-blink 1s step-end infinite; }
     .heat.contested { color: var(--amber);  background: var(--amber-soft);  border: 1px solid rgba(255,182,0,0.25); }
     .heat.clear     { color: var(--blue);   background: var(--blue-soft);   border: 1px solid rgba(0,180,255,0.25); }
-    .heat.decisive  { color: var(--brand);  background: var(--brand-soft);  border: 1px solid rgba(0,255,136,0.25); }
+    .heat.decisive  { color: var(--brand);  background: var(--brand-soft);  border: 1px solid rgba(78,158,255,0.3); }
     @keyframes heat-blink { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
     /* ================================================================
@@ -669,7 +669,7 @@
     }
     .tier-1 .target-tier { color: var(--red);   background: var(--red-soft);   border: 1px solid rgba(255,59,59,0.2); }
     .tier-2 .target-tier { color: var(--amber); background: var(--amber-soft); border: 1px solid rgba(255,182,0,0.2); }
-    .tier-3 .target-tier { color: var(--brand); background: var(--brand-soft); border: 1px solid rgba(0,255,136,0.2); }
+    .tier-3 .target-tier { color: var(--brand); background: var(--brand-soft); border: 1px solid rgba(78,158,255,0.22); }
 
     .target-name { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.02em; color: var(--text-bright); margin-bottom: 4px; }
     .target-meta { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
@@ -706,7 +706,7 @@
       font-size: 0.9rem;
       flex-shrink: 0;
     }
-    .step-icon.done { background: rgba(0,255,136,0.1); color: var(--brand); border: 1px solid rgba(0,255,136,0.2); }
+    .step-icon.done { background: rgba(78,158,255,0.12); color: var(--brand); border: 1px solid rgba(78,158,255,0.25); }
     .step-icon.warn { background: var(--amber-soft);   color: var(--amber); border: 1px solid rgba(255,182,0,0.2); }
     .step-icon.todo { background: var(--blue-soft);    color: var(--blue);  border: 1px solid rgba(0,180,255,0.2); }
     .step-title  { font-size: 0.85rem; font-weight: 700; color: var(--text-bright); letter-spacing: 0.02em; }
@@ -721,7 +721,7 @@
       text-transform: uppercase;
       white-space: nowrap;
     }
-    .step-pill.done { color: var(--brand); background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.2); }
+    .step-pill.done { color: var(--brand); background: rgba(78,158,255,0.1); border: 1px solid rgba(78,158,255,0.22); }
     .step-pill.warn { color: var(--amber); background: var(--amber-soft);   border: 1px solid rgba(255,182,0,0.2); }
     .step-pill.todo { color: var(--blue);  background: var(--blue-soft);    border: 1px solid rgba(0,180,255,0.2); }
 
@@ -735,7 +735,7 @@
       color: var(--brand);
       background: var(--brand-soft);
       font-size: 0.85em;
-      border: 1px solid rgba(0,255,136,0.15);
+      border: 1px solid rgba(78,158,255,0.18);
     }
 
     /* ================================================================
@@ -763,7 +763,7 @@
       font-weight: 700;
       letter-spacing: 0.1em;
     }
-    .method-get  { color: var(--brand); background: var(--brand-soft);  border: 1px solid rgba(0,255,136,0.2); }
+    .method-get  { color: var(--brand); background: var(--brand-soft);  border: 1px solid rgba(78,158,255,0.25); }
     .method-lock { color: var(--red);   background: var(--red-soft);    border: 1px solid rgba(255,59,59,0.2); }
     .route-path { font-size: 0.78rem; font-weight: 700; color: var(--text-bright); }
     .route-note { font-size: 0.75rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.02em; font-family: var(--font-sans); }
@@ -776,7 +776,7 @@
       font-weight: 700;
       letter-spacing: 0.08em;
     }
-    .auth-public  { color: var(--brand); background: var(--brand-soft);  border: 1px solid rgba(0,255,136,0.15); }
+    .auth-public  { color: var(--brand); background: var(--brand-soft);  border: 1px solid rgba(78,158,255,0.2); }
     .auth-key     { color: var(--red);   background: var(--red-soft);    border: 1px solid rgba(255,59,59,0.15); }
     .copy-btn {
       min-height: 32px;
@@ -809,7 +809,7 @@
       text-transform: uppercase;
       transition: color 0.15s, background 0.15s, border-color 0.15s;
     }
-    .tab-btn.active { color: #011508; background: var(--brand); border-color: var(--brand); font-weight: 800; }
+    .tab-btn.active { color: #03091a; background: var(--brand); border-color: var(--brand); font-weight: 800; }
     .tab-btn:not(.active):hover { color: var(--brand); border-color: var(--line-hi); }
 
     pre.ref-pre {
@@ -819,7 +819,7 @@
       padding: 20px;
       border-radius: var(--radius-md);
       border: 1px solid var(--line);
-      background: rgba(126,232,162,0.02);
+      background: rgba(78,158,255,0.03);
       color: var(--muted);
       font-size: 0.78rem;
       line-height: 1.75;
@@ -839,7 +839,7 @@
     }
     .quality-item:last-child { border-bottom: 0; }
     .q-icon { width: 26px; height: 26px; display: grid; place-items: center; border-radius: var(--radius); font-size: 0.7rem; }
-    .q-icon.done { background: rgba(0,255,136,0.1); color: var(--brand); }
+    .q-icon.done { background: rgba(78,158,255,0.12); color: var(--brand); }
     .q-icon.todo { background: var(--blue-soft);   color: var(--blue); }
     .q-label { color: var(--text); }
 
@@ -855,7 +855,7 @@
       border: 1px solid var(--line-hi);
       border-radius: var(--radius-md);
       color: var(--brand);
-      background: rgba(1,14,8,0.97);
+      background: rgba(8,14,28,0.97);
       box-shadow: var(--glow-sm);
       font-size: 0.72rem;
       font-weight: 700;
@@ -875,7 +875,7 @@
       border: 1px solid var(--line-hi);
       border-radius: var(--radius);
       color: var(--brand);
-      background: rgba(1,14,8,0.95);
+      background: rgba(8,14,28,0.95);
       font-size: 1rem;
       transition: box-shadow 0.15s;
     }
@@ -924,10 +924,10 @@
 
   <!-- ── CLASSIFICATION BANNERS ── -->
   <div class="class-banner top" role="banner" aria-label="Classification">
-    UNCLASSIFIED // FOR OFFICIAL USE ONLY // LOCAL ELECTIONS INTELLIGENCE PROGRAM // HARRIS COUNTY OPS
+    UNCLASSIFIED // FOR OFFICIAL USE ONLY // LOCAL ELECTIONS INTELLIGENCE PROGRAM // HARRIS + FORT BEND COUNTY OPS
   </div>
   <div class="class-banner bottom" aria-hidden="true">
-    UNCLASSIFIED // FOR OFFICIAL USE ONLY // LOCAL ELECTIONS INTELLIGENCE PROGRAM // HARRIS COUNTY OPS
+    UNCLASSIFIED // FOR OFFICIAL USE ONLY // LOCAL ELECTIONS INTELLIGENCE PROGRAM // HARRIS + FORT BEND COUNTY OPS
   </div>
 
   <noscript>
@@ -943,7 +943,7 @@
         <span class="brand-mark" aria-hidden="true">⬡</span>
         <span class="brand-text">
           <strong>Elections Intel Center</strong>
-          <em>Harris County // Field Operations</em>
+          <em>Harris + Fort Bend // Field Operations</em>
         </span>
       </a>
 
@@ -1025,7 +1025,7 @@
       <div class="section-head">
         <div class="section-eyebrow">// OPERATIONS CENTER //</div>
         <h2>Contest Analysis</h2>
-        <div class="section-sub">Filter and sort candidate intelligence. Heat levels computed from vote margin. All data is embedded sample intelligence.</div>
+        <div class="section-sub">Filter by jurisdiction, operation, and race. Heat levels computed from vote margin. Covers Harris and Fort Bend counties.</div>
       </div>
 
       <div class="metrics" id="metrics" aria-live="polite"></div>
@@ -1183,7 +1183,7 @@
   </main>
 
   <footer class="shell">
-    <p>Elections Intelligence Center // Harris County Ops // <code>index.html</code> — single-file, no build step, no external dependencies.</p>
+    <p>Elections Intelligence Center // Harris + Fort Bend County Ops // <code>index.html</code> — single-file, no build step, no external dependencies.</p>
   </footer>
 
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
@@ -1262,6 +1262,81 @@
               { candidate: "Dana Williams", votes: 55120, pct: 49.7, party: "DEM", role: "DEMOCRATIC" },
               { candidate: "Chris Johnson", votes: 53408, pct: 48.2, party: "REP", role: "REPUBLICAN" },
               { candidate: "Sam Ortega",    votes:  2328, pct:  2.1, party: "IND", role: "INDEPENDENT" }
+            ]
+          }
+        ]
+      },
+      {
+        id: 3,
+        opCode: "OP-FB-2025-MAY",
+        name: "May 2025 Uniform Election",
+        jurisdiction: "Fort Bend County",
+        date: "2025-05-03",
+        reportingPct: 100.0,
+        reportVersions: ["canvass"],
+        contests: [
+          {
+            id: 301, name: "Sugar Land City Council At-Large", type: "Citywide", tier: 1,
+            opCode: "OP-FB-2025-MAY-301",
+            intel: "At-large seat in Sugar Land — fastest-growing city in Fort Bend. Wallace secured decisive 18.4-point margin with strong support from master-planned community precincts. No recount risk. Final canvass confirmed.",
+            results: [
+              { candidate: "Patricia Wallace",  votes: 9814, pct: 59.2, party: "Nonpartisan", role: "INCUMBENT" },
+              { candidate: "Marcus Tran",        votes: 6764, pct: 40.8, party: "Nonpartisan", role: "CHALLENGER" }
+            ]
+          },
+          {
+            id: 302, name: "FBISD School Board Position 4", type: "School board", tier: 2,
+            opCode: "OP-FB-2025-MAY-302",
+            intel: "Fort Bend ISD board race drew elevated turnout amid ongoing curriculum debates. Chen won by 5.8 points — comfortable but within the range where mail ballot curing can shift results. Canvass complete.",
+            results: [
+              { candidate: "Linda Chen",   votes: 14302, pct: 52.9, party: "Nonpartisan", role: "ENDORSED" },
+              { candidate: "Derek Okafor", votes: 12736, pct: 47.1, party: "Nonpartisan", role: "CHALLENGER" }
+            ]
+          },
+          {
+            id: 303, name: "Fort Bend MUD 34 Director", type: "Special district", tier: 3,
+            opCode: "OP-FB-2025-MAY-303",
+            intel: "Municipal Utility District board race with low turnout typical of special district elections. Nguyen ran unopposed but required a valid election for seating. UNCONTESTED — administrative monitoring only.",
+            results: [
+              { candidate: "Kevin Nguyen", votes: 1482, pct: 100.0, party: "Nonpartisan", role: "UNOPPOSED" }
+            ]
+          }
+        ]
+      },
+      {
+        id: 4,
+        opCode: "OP-FB-2025-NOV",
+        name: "November 2025 General Election",
+        jurisdiction: "Fort Bend County",
+        date: "2025-11-04",
+        reportingPct: 61.5,
+        reportVersions: ["unofficial"],
+        contests: [
+          {
+            id: 401, name: "Fort Bend County Judge", type: "County", tier: 1,
+            opCode: "OP-FB-2025-NOV-401",
+            intel: "CRITICAL — County Judge race with 2.3-point margin and 38.5% precincts unreported. Guerrero leads by 3,204 votes. Southwest Fort Bend precincts (Stafford, Missouri City) trending Democratic; Richmond/Rosenberg precincts trending Republican. Outcome uncertain. HIGH PRIORITY MONITORING.",
+            results: [
+              { candidate: "Rosa Guerrero",  votes: 71408, pct: 51.2, party: "DEM", role: "DEMOCRATIC" },
+              { candidate: "Brian Hartley",  votes: 68204, pct: 48.8, party: "REP", role: "REPUBLICAN" }
+            ]
+          },
+          {
+            id: 402, name: "Fort Bend County Sheriff", type: "County", tier: 2,
+            opCode: "OP-FB-2025-NOV-402",
+            intel: "Sheriff race with comfortable 12.1-point Republican lead at 61.5% reporting. Geographic pattern consistent across reported precincts. Low probability of lead reversal given remaining precinct distribution.",
+            results: [
+              { candidate: "James Whitfield", votes: 80315, pct: 56.1, party: "REP", role: "REPUBLICAN" },
+              { candidate: "Alicia Moreno",   votes: 62888, pct: 43.9, party: "DEM", role: "DEMOCRATIC" }
+            ]
+          },
+          {
+            id: 403, name: "Proposition B — Road Bond", type: "Measure", tier: 3,
+            opCode: "OP-FB-2025-NOV-403",
+            intel: "Fort Bend County road bond at $420M. Currently passing at 58.4% FOR with 61.5% reporting. Bond measures typically lose support as rural precincts report — margin under observation. Master-planned community precincts heavily in favor.",
+            results: [
+              { candidate: "For",     votes: 83612, pct: 58.4, party: "Measure", role: "SUPPORT" },
+              { candidate: "Against", votes: 59591, pct: 41.6, party: "Measure", role: "OPPOSE" }
             ]
           }
         ]
@@ -1735,7 +1810,7 @@ GET  /intel/priority-races
       const allHeat = el.contests.map((c) => computeHeat(c.results));
       const critical = allHeat.filter((h) => h.cls === "critical").length;
       const total    = el.contests.length;
-      const body = `Operation ${el.opCode} — ${el.name} — ${el.jurisdiction}.\n\n${el.reportingPct.toFixed(1)}% of precincts reporting. ${total} contest${total !== 1 ? "s" : ""} under active monitoring. ${critical > 0 ? `⚠ ${critical} CRITICAL race${critical > 1 ? "s" : ""} detected — margin under 3 points.` : "All margins within expected parameters — no critical alerts."}\n\nData source: Harris County cumulative PDF. Integrity status: VERIFIED. Collection pipeline: NOMINAL.`;
+      const body = `Operation ${el.opCode} — ${el.name} — ${el.jurisdiction}.\n\n${el.reportingPct.toFixed(1)}% of precincts reporting. ${total} contest${total !== 1 ? "s" : ""} under active monitoring. ${critical > 0 ? `⚠ ${critical} CRITICAL race${critical > 1 ? "s" : ""} detected — margin under 3 points.` : "All margins within expected parameters — no critical alerts."}\n\nData source: ${el.jurisdiction} cumulative PDF. Integrity status: VERIFIED. Collection pipeline: NOMINAL.`;
       const bodyEl = $("#sitrep-body");
       if (bodyEl) bodyEl.textContent = body;
     }
@@ -1993,4 +2068,3 @@ GET  /intel/priority-races
     renderQualityList();
   </script>
 </body>
-</html>
