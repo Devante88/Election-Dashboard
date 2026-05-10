@@ -76,3 +76,2098 @@
     :focus-visible { outline: 1px solid var(--brand); outline-offset: 3px; border-radius: 3px; }
 
     .shell { width: min(1280px, calc(100% - 32px)); margin: 0 auto; }
+
+    /* ================================================================
+       CLASSIFICATION BANNERS
+    ================================================================ */
+    .class-banner {
+      position: fixed;
+      left: 0; right: 0;
+      z-index: 9980;
+      padding: 5px 16px;
+      background: #0f172a;
+      color: rgba(255,255,255,0.85);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+    .class-banner.top    { top:0;    border-bottom: 1px solid var(--line); }
+    .class-banner.bottom { bottom:0; border-top:    1px solid var(--line); }
+
+    /* ================================================================
+       HEADER
+    ================================================================ */
+    header {
+      position: sticky;
+      top: 26px;
+      z-index: 500;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 1px 3px rgba(15,23,42,0.04);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 68px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--brand);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .brand:hover { text-decoration: none; }
+
+    .brand-mark {
+      width: 38px; height: 38px;
+      display: grid; place-items: center;
+      border: 1px solid var(--brand-dim);
+      border-radius: var(--radius);
+      font-size: 1.1rem;
+      box-shadow: var(--glow-sm);
+    }
+
+    .brand-text { line-height: 1.15; }
+    .brand-text strong { display: block; font-size: 0.95rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--brand); }
+    .brand-text em     { display: block; font-size: 0.7rem; font-style: normal; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+    .nav-links { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .nav-links a {
+      padding: 6px 10px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .nav-links a:hover { color: var(--brand); border-color: var(--line); text-decoration: none; }
+
+    .header-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+    .status-cluster {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 8px 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .status-cluster .dot-live {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #16a34a;
+      box-shadow: 0 0 0 3px rgba(22,163,74,0.18);
+      animation: blink-dot 1.4s step-end infinite;
+      flex-shrink: 0;
+    }
+    @keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    #live-clock { color: var(--brand); font-variant-numeric: tabular-nums; }
+    .session-id { color: var(--muted); opacity: 0.7; }
+
+    .nav-toggle {
+      display: none;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--muted);
+      background: transparent;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+    }
+
+    /* ================================================================
+       BUTTONS
+    ================================================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 0 14px;
+      border: 1px solid var(--line-hi);
+      border-radius: var(--radius);
+      color: var(--brand);
+      background: var(--brand-soft);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    .btn:hover { background: rgba(37,99,235,0.14); box-shadow: var(--glow-sm); text-decoration: none; }
+    .btn.primary { color: #ffffff; background: var(--brand); border-color: var(--brand); font-weight: 700; }
+    .btn.primary:hover { background: var(--brand-dim); box-shadow: var(--glow); }
+    .btn.ghost { background: transparent; border-color: transparent; }
+    .btn.ghost:hover { background: var(--brand-soft); border-color: var(--line); box-shadow: none; }
+
+    /* ================================================================
+       INTEL TICKER
+    ================================================================ */
+    .ticker-wrap {
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      border-bottom: 1px solid var(--line);
+      background: rgba(37,99,235,0.03);
+      height: 34px;
+      white-space: nowrap;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .ticker-label {
+      flex-shrink: 0;
+      padding: 0 14px;
+      border-right: 1px solid var(--line);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      color: var(--brand);
+      font-weight: 700;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      background: rgba(37,99,235,0.06);
+    }
+    .ticker-clip { overflow: hidden; flex: 1; }
+    .ticker-track {
+      display: inline-block;
+      animation: scroll-ticker 100s linear infinite;
+      padding-left: 40px;
+    }
+    @keyframes scroll-ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+    .tick-item { color: var(--muted); }
+    .tick-item.alert { color: var(--amber); }
+    .tick-item.critical { color: var(--red); }
+    .tick-sep { color: var(--muted-2); padding: 0 18px; opacity: 0.7; }
+
+    /* ================================================================
+       SHELL + SECTIONS
+    ================================================================ */
+    section { padding: 32px 0; scroll-margin-top: 112px; }
+    .section-head { margin-bottom: 20px; }
+    .section-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      border: 1px solid var(--line-hi);
+      border-radius: var(--radius);
+      color: var(--brand);
+      background: var(--brand-soft);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    h2 {
+      font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-bright);
+    }
+    .section-sub {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      letter-spacing: 0.02em;
+      font-family: var(--font-sans);
+    }
+
+    /* ================================================================
+       PANELS (with corner brackets)
+    ================================================================ */
+    .panel {
+      position: relative;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .panel::before, .panel::after {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+    }
+    .panel::before {
+      top: 7px; left: 7px;
+      border-top: 1px solid rgba(37,99,235,0.35);
+      border-left: 1px solid rgba(37,99,235,0.35);
+    }
+    .panel::after {
+      bottom: 7px; right: 7px;
+      border-bottom: 1px solid rgba(37,99,235,0.35);
+      border-right: 1px solid rgba(37,99,235,0.35);
+    }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--brand);
+    }
+    .panel-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 3px 8px;
+    }
+
+    /* ================================================================
+       SITREP (HERO)
+    ================================================================ */
+    .sitrep { padding: 36px 0 24px; }
+    .sitrep-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+
+    .sitrep-card {
+      position: relative;
+      padding: 32px 36px;
+      border: 1px solid var(--line-hi);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+    .sitrep-card::before, .sitrep-card::after {
+      content: '';
+      position: absolute;
+      width: 22px; height: 22px;
+    }
+    .sitrep-card::before { top: 8px; left: 8px; border-top: 1px solid var(--brand-dim); border-left: 1px solid var(--brand-dim); }
+    .sitrep-card::after  { bottom: 8px; right: 8px; border-bottom: 1px solid var(--brand-dim); border-right: 1px solid var(--brand-dim); }
+
+    .sitrep-stamp {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .sitrep-badge {
+      padding: 5px 12px;
+      border: 1px solid var(--brand-dim);
+      border-radius: var(--radius);
+      color: var(--brand);
+      background: var(--brand-soft);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .sitrep-ts { color: var(--muted); font-size: 0.7rem; letter-spacing: 0.08em; }
+
+    .sitrep-title {
+      font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-bright);
+      line-height: 1.05;
+      margin-bottom: 14px;
+    }
+    .sitrep-title span { color: var(--brand); }
+
+    .sitrep-body {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.8;
+      margin-bottom: 22px;
+      font-family: var(--font-sans);
+    }
+
+    .sitrep-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* Status card */
+    .status-card {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .status-card::before, .status-card::after {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+    }
+    .status-card::before { top: 6px; left: 6px; border-top: 1px solid rgba(37,99,235,0.3); border-left: 1px solid rgba(37,99,235,0.3); }
+    .status-card::after  { bottom: 6px; right: 6px; border-bottom: 1px solid rgba(37,99,235,0.3); border-right: 1px solid rgba(37,99,235,0.3); }
+
+    .status-card-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(37,99,235,0.04);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--brand);
+    }
+    .status-rows { padding: 4px 0; }
+    .status-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.75rem;
+    }
+    .status-row:last-child { border-bottom: 0; }
+    .status-row-label { color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+    .status-row-value { color: var(--text-bright); font-weight: 700; text-align: right; }
+    .status-row-value.green  { color: var(--brand); }
+    .status-row-value.amber  { color: var(--amber); }
+    .status-row-value.red    { color: var(--red); }
+    .status-row-value.live   { color: var(--brand); animation: blink-dot 1.4s step-end infinite; }
+
+    /* Reporting bar */
+    .rep-bar-wrap { padding: 16px 18px 18px; border-top: 1px solid var(--line); }
+    .rep-bar-label { display: flex; justify-content: space-between; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .rep-bar-label span:last-child { color: var(--brand); font-weight: 700; }
+    .rep-bar-track { height: 6px; border-radius: 999px; background: rgba(37,99,235,0.12); overflow: hidden; }
+    .rep-bar-fill  { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--brand-dim), var(--brand)); transition: width 0.7s cubic-bezier(0.4,0,0.2,1); }
+
+    /* ================================================================
+       METRICS BAR
+    ================================================================ */
+    .metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .metric {
+      position: relative;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+    .metric::before {
+      content: '';
+      position: absolute;
+      top: 5px; left: 5px;
+      width: 12px; height: 12px;
+      border-top: 1px solid rgba(37,99,235,0.3);
+      border-left: 1px solid rgba(37,99,235,0.3);
+    }
+    .metric small { display: block; color: var(--muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+    .metric strong { display: block; margin-top: 6px; font-size: clamp(1.3rem, 2.5vw, 1.8rem); font-weight: 700; letter-spacing: 0.02em; color: var(--brand); line-height: 1; }
+    .metric em { display: block; margin-top: 8px; color: var(--muted); font-size: 0.7rem; font-style: normal; letter-spacing: 0.04em; font-family: var(--font-sans); }
+
+    /* ================================================================
+       DASHBOARD GRID
+    ================================================================ */
+    .ops-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.9fr); gap: 16px; }
+
+    /* SITREP panel (auto-generated) */
+    .sitrep-pre {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow: auto;
+      padding: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.75;
+      font-family: inherit;
+    }
+    .sitrep-pre .hi { color: var(--text-bright); }
+    .sitrep-pre .brand { color: var(--brand); }
+    .sitrep-pre .amber { color: var(--amber); }
+    .sitrep-pre .red   { color: var(--red); }
+
+    /* ================================================================
+       CONTROLS
+    ================================================================ */
+    .controls { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 16px; align-items: end; }
+    .field { display: grid; gap: 5px; }
+    .field label {
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    select, input[type="search"] {
+      min-height: 38px;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 0 10px;
+      color: var(--text);
+      background: var(--surface-hi);
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: auto;
+    }
+    select:focus, input[type="search"]:focus {
+      border-color: var(--brand-dim);
+      box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
+      outline: none;
+    }
+    select option { background: var(--surface); }
+
+    /* ================================================================
+       TABLE
+    ================================================================ */
+    .table-wrap { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+    th {
+      color: var(--muted);
+      background: var(--surface-hi);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    th:first-child { border-radius: var(--radius) 0 0 0; }
+    th:last-child  { border-radius: 0 var(--radius) 0 0; }
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover td { background: rgba(37,99,235,0.04); }
+
+    .sort-btn {
+      padding: 0; border: 0;
+      color: inherit; background: none;
+      font: inherit; font-weight: 700;
+      text-transform: inherit; letter-spacing: inherit;
+      display: inline-flex; align-items: center; gap: 5px;
+      cursor: pointer;
+    }
+    .sort-arrow { opacity: 0.3; font-style: normal; }
+    .sort-arrow.on { opacity: 1; color: var(--brand); }
+
+    .bar-cell { min-width: 120px; }
+    .bar-track {
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(37,99,235,0.12);
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--brand-dim), var(--brand));
+      transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .lead-badge { display: inline-flex; align-items: center; gap: 5px; color: var(--brand); font-weight: 700; }
+    .muted-text { color: var(--muted); }
+    .totals-row td { font-weight: 700; border-top: 1px solid var(--line-hi); background: rgba(37,99,235,0.05); }
+
+    /* Heat level badges */
+    .heat {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--radius);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .heat.critical { color: var(--red);    background: var(--red-soft);    border: 1px solid rgba(255,59,59,0.25);    animation: heat-blink 1s step-end infinite; }
+    .heat.contested { color: var(--amber);  background: var(--amber-soft);  border: 1px solid rgba(255,182,0,0.25); }
+    .heat.clear     { color: var(--blue);   background: var(--blue-soft);   border: 1px solid rgba(8,145,178,0.25); }
+    .heat.decisive  { color: var(--brand);  background: var(--brand-soft);  border: 1px solid rgba(37,99,235,0.3); }
+    @keyframes heat-blink { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    /* ================================================================
+       CHART (VOTE SHARE)
+    ================================================================ */
+    .chart { display: grid; gap: 10px; }
+    .chart-row { display: grid; grid-template-columns: 110px 1fr 52px; gap: 8px; align-items: center; }
+    .chart-label { overflow: hidden; color: var(--muted); font-size: 0.75rem; letter-spacing: 0.02em; text-overflow: ellipsis; white-space: nowrap; }
+    .chart-val   { text-align: right; font-weight: 700; font-size: 0.78rem; color: var(--brand); }
+
+    /* ================================================================
+       INTELLIGENCE NOTE
+    ================================================================ */
+    .intel-note {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-left: 2px solid var(--brand-dim);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      background: var(--brand-soft);
+      font-size: 0.83rem;
+      color: var(--muted);
+      line-height: 1.7;
+      font-family: var(--font-sans);
+    }
+    .intel-note strong { display: block; color: var(--brand); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; font-family: var(--font-mono); }
+
+    /* ================================================================
+       PRIORITY TARGET CARDS
+    ================================================================ */
+    .targets-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .target-card {
+      position: relative;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .target-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .target-card.tier-1::before { background: var(--red); }
+    .target-card.tier-2::before { background: var(--amber); }
+    .target-card.tier-3::before { background: var(--brand); }
+
+    .target-tier {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+      padding: 4px 9px;
+      border-radius: var(--radius);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .tier-1 .target-tier { color: var(--red);   background: var(--red-soft);   border: 1px solid rgba(255,59,59,0.2); }
+    .tier-2 .target-tier { color: var(--amber); background: var(--amber-soft); border: 1px solid rgba(255,182,0,0.2); }
+    .tier-3 .target-tier { color: var(--brand); background: var(--brand-soft); border: 1px solid rgba(37,99,235,0.22); }
+
+    .target-name { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.02em; color: var(--text-bright); margin-bottom: 4px; }
+    .target-meta { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
+    .target-intel { font-size: 0.84rem; color: var(--muted); line-height: 1.7; margin-bottom: 12px; font-family: var(--font-sans); }
+
+    .target-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+    .target-opcode { font-size: 0.65rem; letter-spacing: 0.08em; color: var(--muted-2); text-transform: uppercase; }
+
+    /* ================================================================
+       FIELD OPS (TIMELINE)
+    ================================================================ */
+    .ops-timeline { display: grid; gap: 10px; }
+    .ops-step {
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      gap: 14px;
+      align-items: start;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+    .step-icon {
+      width: 34px; height: 34px;
+      display: grid; place-items: center;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .step-icon.done { background: rgba(37,99,235,0.12); color: var(--brand); border: 1px solid rgba(37,99,235,0.25); }
+    .step-icon.warn { background: var(--amber-soft);   color: var(--amber); border: 1px solid rgba(255,182,0,0.2); }
+    .step-icon.todo { background: var(--blue-soft);    color: var(--blue);  border: 1px solid rgba(8,145,178,0.2); }
+    .step-title  { font-size: 0.85rem; font-weight: 700; color: var(--text-bright); letter-spacing: 0.02em; }
+    .step-detail { font-size: 0.82rem; color: var(--muted); margin-top: 4px; line-height: 1.65; font-family: var(--font-sans); }
+    .step-pill {
+      align-self: center;
+      padding: 4px 10px;
+      border-radius: var(--radius);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .step-pill.done { color: var(--brand); background: rgba(37,99,235,0.1); border: 1px solid rgba(37,99,235,0.22); }
+    .step-pill.warn { color: var(--amber); background: var(--amber-soft);   border: 1px solid rgba(255,182,0,0.2); }
+    .step-pill.todo { color: var(--blue);  background: var(--blue-soft);    border: 1px solid rgba(8,145,178,0.2); }
+
+    /* ================================================================
+       SCHEMA / DATABASE
+    ================================================================ */
+    .db-tools { display: grid; grid-template-columns: 1fr 200px; gap: 10px; margin-bottom: 14px; }
+    code {
+      padding: 2px 6px;
+      border-radius: var(--radius);
+      color: var(--brand);
+      background: var(--brand-soft);
+      font-size: 0.85em;
+      border: 1px solid rgba(37,99,235,0.18);
+    }
+
+    /* ================================================================
+       API ROUTES
+    ================================================================ */
+    .route-actions { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+    .routes { display: grid; gap: 8px; }
+    .route {
+      display: grid;
+      grid-template-columns: 72px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      transition: border-color 0.15s;
+    }
+    .route:hover { border-color: var(--line-hi); }
+    .method-tag {
+      text-align: center;
+      padding: 5px 0;
+      border-radius: var(--radius);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+    .method-get  { color: var(--brand); background: var(--brand-soft);  border: 1px solid rgba(37,99,235,0.25); }
+    .method-lock { color: var(--red);   background: var(--red-soft);    border: 1px solid rgba(255,59,59,0.2); }
+    .route-path { font-size: 0.78rem; font-weight: 700; color: var(--text-bright); }
+    .route-note { font-size: 0.75rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.02em; font-family: var(--font-sans); }
+    .auth-tag {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 7px;
+      border-radius: var(--radius);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .auth-public  { color: var(--brand); background: var(--brand-soft);  border: 1px solid rgba(37,99,235,0.2); }
+    .auth-key     { color: var(--red);   background: var(--red-soft);    border: 1px solid rgba(255,59,59,0.15); }
+    .copy-btn {
+      min-height: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--muted);
+      background: transparent;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .copy-btn:hover { color: var(--brand); border-color: var(--line-hi); }
+
+    /* ================================================================
+       REFERENCE / BRIEFING TABS
+    ================================================================ */
+    .tab-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tab-btn {
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--muted);
+      background: transparent;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.15s, background 0.15s, border-color 0.15s;
+    }
+    .tab-btn.active { color: #ffffff; background: var(--brand); border-color: var(--brand); font-weight: 700; }
+    .tab-btn:not(.active):hover { color: var(--brand); border-color: var(--line-hi); }
+
+    pre.ref-pre {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow: auto;
+      padding: 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: rgba(37,99,235,0.03);
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.75;
+    }
+
+    /* ================================================================
+       QUALITY CHECKLIST
+    ================================================================ */
+    .quality-item {
+      display: grid;
+      grid-template-columns: 30px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.8rem;
+    }
+    .quality-item:last-child { border-bottom: 0; }
+    .q-icon { width: 26px; height: 26px; display: grid; place-items: center; border-radius: var(--radius); font-size: 0.7rem; }
+    .q-icon.done { background: rgba(37,99,235,0.12); color: var(--brand); }
+    .q-icon.todo { background: var(--blue-soft);   color: var(--blue); }
+    .q-label { color: var(--text); }
+
+    /* ================================================================
+       TOAST + BACK TO TOP
+    ================================================================ */
+    .toast {
+      position: fixed;
+      right: 18px; bottom: 44px;
+      z-index: 5000;
+      display: none;
+      padding: 11px 16px;
+      border: 1px solid var(--line-hi);
+      border-radius: var(--radius-md);
+      color: var(--brand);
+      background: #ffffff;
+      box-shadow: var(--glow);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .toast.show { display: block; animation: pop-toast 3s ease both; }
+    @keyframes pop-toast { 0%,100%{opacity:0;transform:translateY(8px)} 10%,80%{opacity:1;transform:translateY(0)} }
+
+    #back-top {
+      position: fixed;
+      right: 18px; bottom: 90px;
+      z-index: 4000;
+      width: 40px; height: 40px;
+      display: none;
+      align-items: center; justify-content: center;
+      border: 1px solid var(--line-hi);
+      border-radius: var(--radius);
+      color: var(--brand);
+      background: #ffffff;
+      font-size: 1rem;
+      transition: box-shadow 0.15s;
+      box-shadow: var(--glow-sm);
+    }
+    #back-top.visible { display: flex; }
+    #back-top:hover { box-shadow: var(--glow-sm); }
+
+    /* ================================================================
+       FOOTER
+    ================================================================ */
+    footer {
+      padding: 28px 0 8px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ================================================================
+       RESPONSIVE
+    ================================================================ */
+    @media (max-width: 1040px) {
+      .sitrep-grid, .ops-grid, .targets-grid { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .topbar { flex-wrap: wrap; align-items: flex-start; padding: 12px 0; gap: 10px; }
+      .nav-links { display: none; }
+      .nav-links.open { display: flex; flex-direction: column; width: 100%; gap: 4px; padding-bottom: 8px; }
+      .nav-toggle { display: inline-flex; }
+      .controls { grid-template-columns: 1fr 1fr; }
+      .controls .field:nth-child(3) { grid-column: 1 / -1; }
+      .controls .export-wrap { grid-column: 1 / -1; }
+      .db-tools { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: 1fr; }
+      .route, .ops-step, .chart-row { grid-template-columns: 1fr; }
+      .bar-cell { min-width: 0; }
+    }
+    @media print {
+      header, .class-banner, .ticker-wrap, #back-top, .toast { display: none !important; }
+      body { background: #fff; color: #000; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── CLASSIFICATION BANNERS ── -->
+  <div class="class-banner top" role="banner" aria-label="Classification">
+    UNCLASSIFIED // FOR OFFICIAL USE ONLY // LOCAL ELECTIONS INTELLIGENCE PROGRAM // HARRIS + FORT BEND COUNTY OPS
+  </div>
+  <div class="class-banner bottom" aria-hidden="true">
+    UNCLASSIFIED // FOR OFFICIAL USE ONLY // LOCAL ELECTIONS INTELLIGENCE PROGRAM // HARRIS + FORT BEND COUNTY OPS
+  </div>
+
+  <noscript>
+    <div style="position:fixed;top:26px;left:0;right:0;z-index:9999;padding:14px 20px;background:#ff3b3b;color:#000;font-weight:700;text-align:center;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase">
+      ALERT: JavaScript is required to operate this intelligence dashboard.
+    </div>
+  </noscript>
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="shell topbar">
+      <a class="brand" href="#top" aria-label="Elections Intelligence Center home">
+        <span class="brand-mark" aria-hidden="true">⬡</span>
+        <span class="brand-text">
+          <strong>Elections Intel Center</strong>
+          <em>Harris + Fort Bend // Field Operations</em>
+        </span>
+      </a>
+
+      <nav class="nav-links" id="main-nav" aria-label="Dashboard sections">
+        <a href="#dashboard">Ops Center</a>
+        <a href="#targets">Targets</a>
+        <a href="#jurisdictions">Cities</a>
+        <a href="#fieldops">Field Ops</a>
+        <a href="#inteldatabase">Intel DB</a>
+        <a href="#securecomms">Secure Comms</a>
+        <a href="#briefing">Briefing</a>
+      </nav>
+
+      <div class="header-right">
+        <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Toggle navigation">☰ MENU</button>
+        <div class="status-cluster" aria-label="System status">
+          <span class="dot-live" aria-label="System active"></span>
+          <span>FEED: <span class="status-row-value green">LIVE</span></span>
+          <span id="live-clock" aria-live="off" aria-label="Current UTC time">--:--:-- UTC</span>
+          <span class="session-id" id="session-id"></span>
+        </div>
+        <a class="btn primary" href="#dashboard">ENTER OPS</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── INTEL TICKER ── -->
+  <div class="ticker-wrap" aria-label="Live intelligence feed" role="marquee">
+    <span class="ticker-label">// INTEL //</span>
+    <div class="ticker-clip">
+      <div class="ticker-track" id="ticker-track"></div>
+    </div>
+  </div>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main id="top">
+
+    <!-- SITUATION REPORT -->
+    <section class="sitrep shell" id="sitrep">
+      <div class="sitrep-grid">
+        <div class="sitrep-card">
+          <div class="sitrep-stamp">
+            <span class="sitrep-badge">// SITUATION REPORT //</span>
+            <span class="sitrep-ts" id="sitrep-ts"></span>
+          </div>
+          <div class="sitrep-title">
+            Elections<br>
+            <span>Intelligence</span><br>
+            Operations
+          </div>
+          <div class="sitrep-body" id="sitrep-body">
+            Loading intelligence summary...
+          </div>
+          <div class="sitrep-actions">
+            <a class="btn primary" href="#dashboard">Analyze Results</a>
+            <a class="btn" href="#targets">Priority Targets</a>
+            <a class="btn" href="#inteldatabase">Intel Database</a>
+            <a class="btn" href="#securecomms">Secure Comms</a>
+          </div>
+        </div>
+
+        <aside class="status-card" aria-labelledby="status-card-head">
+          <div class="status-card-head" id="status-card-head">// OPERATIONAL STATUS //</div>
+          <div class="status-rows" id="status-rows"></div>
+          <div class="rep-bar-wrap">
+            <div class="rep-bar-label">
+              <span>Precincts Reporting</span>
+              <span id="rep-pct-label">—</span>
+            </div>
+            <div class="rep-bar-track">
+              <div class="rep-bar-fill" id="rep-bar-fill" style="width:0%"></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- OPERATIONS CENTER -->
+    <section id="dashboard" class="shell">
+      <div class="section-head">
+        <div class="section-eyebrow">// OPERATIONS CENTER //</div>
+        <h2>Contest Analysis</h2>
+        <div class="section-sub">Filter by jurisdiction, operation, and race. Heat levels computed from vote margin. Covers Harris and Fort Bend counties.</div>
+      </div>
+
+      <div class="metrics" id="metrics" aria-live="polite"></div>
+
+      <div class="ops-grid">
+        <!-- Results table panel -->
+        <section class="panel" aria-labelledby="results-heading">
+          <div class="panel-head">
+            <span class="panel-title" id="results-heading">Candidate Intelligence</span>
+            <span class="panel-tag" id="contest-op-tag">—</span>
+          </div>
+          <div class="controls">
+            <div class="field">
+              <label for="election-select">Operation</label>
+              <select id="election-select"></select>
+            </div>
+            <div class="field">
+              <label for="contest-select">Target Race</label>
+              <select id="contest-select"></select>
+            </div>
+            <div class="field">
+              <label for="candidate-search">Subject Filter</label>
+              <input id="candidate-search" type="search" placeholder="Search subjects..." autocomplete="off">
+            </div>
+            <div class="export-wrap" style="display:flex;align-items:flex-end">
+              <button class="btn" id="export-csv" type="button" title="Export current results as CSV">⬇ INTEL CSV</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th><button class="sort-btn" data-sort="candidate" type="button">Subject <em class="sort-arrow" id="arrow-candidate">↕</em></button></th>
+                  <th><button class="sort-btn" data-sort="votes" type="button">Support Count <em class="sort-arrow" id="arrow-votes">↕</em></button></th>
+                  <th><button class="sort-btn" data-sort="pct" type="button">Support % <em class="sort-arrow" id="arrow-pct">↕</em></button></th>
+                  <th>Status</th>
+                  <th class="bar-cell">Index</th>
+                </tr>
+              </thead>
+              <tbody id="results-body"></tbody>
+            </table>
+          </div>
+          <div id="intel-note-panel"></div>
+        </section>
+
+        <!-- Chart / SITREP sidebar -->
+        <aside>
+          <div class="panel" style="margin-bottom:16px" aria-labelledby="chart-heading">
+            <div class="panel-head">
+              <span class="panel-title" id="chart-heading">Support Distribution</span>
+              <select id="version-select" aria-label="Report version" style="min-height:28px;font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;padding:0 8px;width:auto"></select>
+            </div>
+            <div class="chart" id="chart"></div>
+          </div>
+
+          <div class="panel" aria-labelledby="sitrep-panel-head">
+            <div class="panel-head">
+              <span class="panel-title" id="sitrep-panel-head">Auto SITREP</span>
+              <span class="panel-tag" id="sitrep-panel-tag">—</span>
+            </div>
+            <pre class="sitrep-pre" id="auto-sitrep"></pre>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- PRIORITY TARGETS -->
+    <section id="targets" class="shell">
+      <div class="section-head">
+        <div class="section-eyebrow">// PRIORITY TARGETS //</div>
+        <h2>Monitored Race Intelligence</h2>
+        <div class="section-sub">All contests classified by priority tier and operational significance.</div>
+      </div>
+      <div class="targets-grid" id="targets-grid"></div>
+    </section>
+
+    <!-- JURISDICTIONS REGISTRY -->
+    <section id="jurisdictions" class="shell">
+      <div class="section-head">
+        <div class="section-eyebrow">// JURISDICTIONS REGISTRY //</div>
+        <h2>Cities &amp; Municipalities</h2>
+        <div class="section-sub">Incorporated municipalities within Harris and Fort Bend counties. Population estimates per US Census Bureau (2020) and Texas Demographic Center (latest available). Use the filter to narrow by county.</div>
+      </div>
+      <div class="panel">
+        <div class="db-tools">
+          <input id="city-filter" type="search" placeholder="Filter by city, e.g. Sugar Land" aria-label="Filter cities" autocomplete="off">
+          <select id="city-county" aria-label="Filter county">
+            <option value="all">All Counties</option>
+            <option value="Harris">Harris County</option>
+            <option value="Fort Bend">Fort Bend County</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>City / Municipality</th>
+                <th>County</th>
+                <th>Type</th>
+                <th style="text-align:right">Population</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody id="city-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIELD OPERATIONS -->
+    <section id="fieldops" class="shell">
+      <div class="section-head">
+        <div class="section-eyebrow">// FIELD OPERATIONS //</div>
+        <h2>Collection Status</h2>
+        <div class="section-sub">ETL pipeline — source PDF acquisition through published intelligence.</div>
+      </div>
+      <div class="ops-timeline" id="ops-timeline"></div>
+    </section>
+
+    <!-- INTELLIGENCE DATABASE -->
+    <section id="inteldatabase" class="shell">
+      <div class="section-head">
+        <div class="section-eyebrow">// INTELLIGENCE DATABASE //</div>
+        <h2>Schema Registry</h2>
+        <div class="section-sub">Search database tables by name or filter by classification group.</div>
+      </div>
+      <div class="panel">
+        <div class="db-tools">
+          <input id="schema-filter" type="search" placeholder="Filter assets, e.g. candidate" aria-label="Filter database tables" autocomplete="off">
+          <select id="schema-group" aria-label="Filter group">
+            <option value="all">All Groups</option>
+            <option value="Core">Core</option>
+            <option value="Results">Results</option>
+            <option value="Intel">Intel</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Asset</th><th>Group</th><th>Purpose</th><th>Integrity Rule</th></tr></thead>
+            <tbody id="schema-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECURE COMMS -->
+    <section id="securecomms" class="shell">
+      <div class="section-head">
+        <div class="section-eyebrow">// SECURE COMMUNICATIONS //</div>
+        <h2>API Protocol</h2>
+        <div class="section-sub">Authorized endpoint registry. Protected routes require <code>X-API-Key</code> header. Copy to clipboard or export all.</div>
+      </div>
+      <div class="route-actions">
+        <button class="btn" id="copy-all-routes" type="button">Copy All Endpoints</button>
+      </div>
+      <div class="routes" id="route-list"></div>
+    </section>
+
+    <!-- CLASSIFIED BRIEFING -->
+    <section id="briefing" class="shell">
+      <div class="section-head">
+        <div class="section-eyebrow">// CLASSIFIED BRIEFING //</div>
+        <h2>Implementation Reference</h2>
+        <div class="section-sub">Technical briefing documents — schema, ETL, API, and production hardening protocols.</div>
+      </div>
+      <div class="ops-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">Briefing Documents</span>
+          </div>
+          <div class="tab-bar" role="tablist" aria-label="Briefing documents" id="ref-tabs">
+            <button class="tab-btn active" role="tab" aria-selected="true"  data-reference="schema"     type="button">Schema</button>
+            <button class="tab-btn"        role="tab" aria-selected="false" data-reference="etl"        type="button">ETL Protocol</button>
+            <button class="tab-btn"        role="tab" aria-selected="false" data-reference="api"        type="button">API Contract</button>
+            <button class="tab-btn"        role="tab" aria-selected="false" data-reference="production" type="button">Production</button>
+          </div>
+          <pre class="ref-pre" id="reference-block" role="region" aria-label="Briefing content" aria-live="polite"></pre>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">Capability Assessment</span>
+          </div>
+          <div id="quality-list"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="shell">
+    <p>Elections Intelligence Center // Harris + Fort Bend County Ops // <code>index.html</code> — single-file, no build step, no external dependencies.</p>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+  <button id="back-top" type="button" aria-label="Back to top" title="Back to top">↑</button>
+
+  <!-- ================================================================
+       SCRIPT
+  ================================================================ -->
+  <script>
+    /* ================================================================
+       DATA — Enhanced with tier, opCode, and intelligence notes
+    ================================================================ */
+    const elections = [
+      {
+        id: 1,
+        opCode: "OP-2025-MAY",
+        name: "May 2025 Uniform Election",
+        jurisdiction: "Harris County",
+        date: "2025-05-03",
+        reportingPct: 98.7,
+        reportVersions: ["unofficial", "canvass"],
+        contests: [
+          {
+            id: 101, name: "Mayor", type: "Citywide", tier: 1,
+            opCode: "OP-2025-MAY-101",
+            intel: "High-visibility citywide race. Rivera entered with institutional backing and won by 6.4 points. Challenger Lee was well-funded with significant PAC support. No anomalies detected in precinct reporting sequence. Margin consistent with pre-election modeling.",
+            results: [
+              { candidate: "Alex Rivera",  votes: 12482, pct: 53.2, party: "Nonpartisan", role: "INCUMBENT-BACKED" },
+              { candidate: "Jordan Lee",   votes: 10981, pct: 46.8, party: "Nonpartisan", role: "CHALLENGER" }
+            ]
+          },
+          {
+            id: 102, name: "City Council District A", type: "District", tier: 1,
+            opCode: "OP-2025-MAY-102",
+            intel: "Three-way contested race. Patel leads Chen by 3.0 points — within recount threshold. Brooks split vote critical. No plurality threshold exists in this jurisdiction. HIGH PRIORITY: outcome may shift with remaining 1.3% of precincts.",
+            results: [
+              { candidate: "Morgan Patel",  votes: 4210, pct: 41.5, party: "Nonpartisan", role: "PRIMARY" },
+              { candidate: "Riley Chen",    votes: 3904, pct: 38.5, party: "Nonpartisan", role: "PRIMARY" },
+              { candidate: "Casey Brooks",  votes: 2030, pct: 20.0, party: "Nonpartisan", role: "INDEPENDENT" }
+            ]
+          },
+          {
+            id: 103, name: "School Trustee Position 2", type: "School board", tier: 2,
+            opCode: "OP-2025-MAY-103",
+            intel: "Board race with 17.2-point margin. Smith demonstrates strong institutional community support. Nguyen campaign was well-organized but lacked broader coalition backing. Recount probability: minimal.",
+            results: [
+              { candidate: "Taylor Smith",  votes: 8021, pct: 58.6, party: "Nonpartisan", role: "ENDORSED" },
+              { candidate: "Jamie Nguyen",  votes: 5668, pct: 41.4, party: "Nonpartisan", role: "CHALLENGER" }
+            ]
+          }
+        ]
+      },
+      {
+        id: 2,
+        opCode: "OP-2025-NOV",
+        name: "November 2025 General Election",
+        jurisdiction: "Harris County",
+        date: "2025-11-04",
+        reportingPct: 74.2,
+        reportVersions: ["unofficial"],
+        contests: [
+          {
+            id: 201, name: "County Proposition A", type: "Measure", tier: 3,
+            opCode: "OP-2025-NOV-201",
+            intel: "Bond measure tracking above threshold at 61.9% FOR with 74.2% reporting. Trajectory suggests approval barring significant geographic bias in 25.8% unreported precincts. Low uncertainty.",
+            results: [
+              { candidate: "For",     votes: 86420, pct: 61.9, party: "Measure", role: "SUPPORT" },
+              { candidate: "Against", votes: 53190, pct: 38.1, party: "Measure", role: "OPPOSE" }
+            ]
+          },
+          {
+            id: 202, name: "County Commissioner Precinct 1", type: "County", tier: 1,
+            opCode: "OP-2025-NOV-202",
+            intel: "CRITICAL STATUS — 1.5-point margin with 25.8% precincts unreported. Williams leads Johnson by 1,712 votes. Geographic distribution of unreported precincts: UNKNOWN — favors neither candidate conclusively. Ortega 2.1% could have spoiler effect if reallocated. MAXIMUM MONITORING.",
+            results: [
+              { candidate: "Dana Williams", votes: 55120, pct: 49.7, party: "DEM", role: "DEMOCRATIC" },
+              { candidate: "Chris Johnson", votes: 53408, pct: 48.2, party: "REP", role: "REPUBLICAN" },
+              { candidate: "Sam Ortega",    votes:  2328, pct:  2.1, party: "IND", role: "INDEPENDENT" }
+            ]
+          }
+        ]
+      },
+      {
+        id: 3,
+        opCode: "OP-FB-2025-MAY",
+        name: "May 2025 Uniform Election",
+        jurisdiction: "Fort Bend County",
+        date: "2025-05-03",
+        reportingPct: 100.0,
+        reportVersions: ["canvass"],
+        contests: [
+          {
+            id: 301, name: "Sugar Land City Council At-Large", type: "Citywide", tier: 1,
+            opCode: "OP-FB-2025-MAY-301",
+            intel: "At-large seat in Sugar Land — fastest-growing city in Fort Bend. Wallace secured decisive 18.4-point margin with strong support from master-planned community precincts. No recount risk. Final canvass confirmed.",
+            results: [
+              { candidate: "Patricia Wallace",  votes: 9814, pct: 59.2, party: "Nonpartisan", role: "INCUMBENT" },
+              { candidate: "Marcus Tran",        votes: 6764, pct: 40.8, party: "Nonpartisan", role: "CHALLENGER" }
+            ]
+          },
+          {
+            id: 302, name: "FBISD School Board Position 4", type: "School board", tier: 2,
+            opCode: "OP-FB-2025-MAY-302",
+            intel: "Fort Bend ISD board race drew elevated turnout amid ongoing curriculum debates. Chen won by 5.8 points — comfortable but within the range where mail ballot curing can shift results. Canvass complete.",
+            results: [
+              { candidate: "Linda Chen",   votes: 14302, pct: 52.9, party: "Nonpartisan", role: "ENDORSED" },
+              { candidate: "Derek Okafor", votes: 12736, pct: 47.1, party: "Nonpartisan", role: "CHALLENGER" }
+            ]
+          },
+          {
+            id: 303, name: "Fort Bend MUD 34 Director", type: "Special district", tier: 3,
+            opCode: "OP-FB-2025-MAY-303",
+            intel: "Municipal Utility District board race with low turnout typical of special district elections. Nguyen ran unopposed but required a valid election for seating. UNCONTESTED — administrative monitoring only.",
+            results: [
+              { candidate: "Kevin Nguyen", votes: 1482, pct: 100.0, party: "Nonpartisan", role: "UNOPPOSED" }
+            ]
+          }
+        ]
+      },
+      {
+        id: 4,
+        opCode: "OP-FB-2025-NOV",
+        name: "November 2025 General Election",
+        jurisdiction: "Fort Bend County",
+        date: "2025-11-04",
+        reportingPct: 61.5,
+        reportVersions: ["unofficial"],
+        contests: [
+          {
+            id: 401, name: "Fort Bend County Judge", type: "County", tier: 1,
+            opCode: "OP-FB-2025-NOV-401",
+            intel: "CRITICAL — County Judge race with 2.3-point margin and 38.5% precincts unreported. Guerrero leads by 3,204 votes. Southwest Fort Bend precincts (Stafford, Missouri City) trending Democratic; Richmond/Rosenberg precincts trending Republican. Outcome uncertain. HIGH PRIORITY MONITORING.",
+            results: [
+              { candidate: "Rosa Guerrero",  votes: 71408, pct: 51.2, party: "DEM", role: "DEMOCRATIC" },
+              { candidate: "Brian Hartley",  votes: 68204, pct: 48.8, party: "REP", role: "REPUBLICAN" }
+            ]
+          },
+          {
+            id: 402, name: "Fort Bend County Sheriff", type: "County", tier: 2,
+            opCode: "OP-FB-2025-NOV-402",
+            intel: "Sheriff race with comfortable 12.1-point Republican lead at 61.5% reporting. Geographic pattern consistent across reported precincts. Low probability of lead reversal given remaining precinct distribution.",
+            results: [
+              { candidate: "James Whitfield", votes: 80315, pct: 56.1, party: "REP", role: "REPUBLICAN" },
+              { candidate: "Alicia Moreno",   votes: 62888, pct: 43.9, party: "DEM", role: "DEMOCRATIC" }
+            ]
+          },
+          {
+            id: 403, name: "Proposition B — Road Bond", type: "Measure", tier: 3,
+            opCode: "OP-FB-2025-NOV-403",
+            intel: "Fort Bend County road bond at $420M. Currently passing at 58.4% FOR with 61.5% reporting. Bond measures typically lose support as rural precincts report — margin under observation. Master-planned community precincts heavily in favor.",
+            results: [
+              { candidate: "For",     votes: 83612, pct: 58.4, party: "Measure", role: "SUPPORT" },
+              { candidate: "Against", votes: 59591, pct: 41.6, party: "Measure", role: "OPPOSE" }
+            ]
+          }
+        ]
+      }
+    ];
+
+    const schemaRows = [
+      { table: "jurisdiction", group: "Core",    purpose: "County, city, district, or parent jurisdiction records.", rule: "Unique by type, name, and parent." },
+      { table: "election",     group: "Core",    purpose: "Election date, name, type, jurisdiction, and source URL.", rule: "Unique by jurisdiction, date, and name." },
+      { table: "contest",      group: "Core",    purpose: "Office or measure appearing on a ballot.", rule: "Unique by election, office, and position." },
+      { table: "candidate",    group: "Core",    purpose: "Normalized candidate identity and optional party/incumbent flags.", rule: "Unique normalized name." },
+      { table: "ballot_entry", group: "Core",    purpose: "Candidate placement in a contest.", rule: "Unique contest/candidate pair." },
+      { table: "result_summary",   group: "Results", purpose: "Contest-level candidate totals and percentages.", rule: "Votes cannot be negative; percentage is 0–100." },
+      { table: "result_precinct",  group: "Results", purpose: "Precinct-level candidate totals.", rule: "Unique contest/candidate/precinct/report version." },
+      { table: "key_dates",    group: "Results", purpose: "Filing windows, early voting windows, and election day.", rule: "One key-date record per election." },
+      { table: "priority_race", group: "Intel",  purpose: "Protected priority tier, notes, and owner for races.", rule: "Priority tier must be positive." },
+      { table: "relationship", group: "Intel",   purpose: "People, candidates, contests, and relationship strength.", rule: "Strength score is 0–1 when present." },
+      { table: "org",          group: "Intel",   purpose: "Organizations: PACs, clubs, endorsers.", rule: "Unique organization name." },
+      { table: "person",       group: "Intel",   purpose: "People connected to jurisdictions, campaigns, and races.", rule: "Jurisdiction reference is optional." }
+    ];
+
+    const routes = [
+      { method: "GET", path: "/",                                        note: "API metadata and navigation index",              auth: "Public" },
+      { method: "GET", path: "/health",                                  note: "System health check — data feed status",         auth: "Public" },
+      { method: "GET", path: "/public/elections",                        note: "List elections with optional filter parameters",  auth: "Public" },
+      { method: "GET", path: "/public/elections/{election_id}/contests", note: "List contests for a given election",             auth: "Public" },
+      { method: "GET", path: "/public/contests/{contest_id}/results",    note: "Candidate result summaries for a contest",       auth: "Public" },
+      { method: "GET", path: "/intel/priority-races",                    note: "Protected priority race intelligence registry",  auth: "X-API-Key" }
+    ];
+
+    const cities = [
+      // Harris County
+      { name: "Houston",              county: "Harris",    type: "City (county seat)", pop: 2302878, note: "Largest city in Texas; 4th largest in U.S." },
+      { name: "Pasadena",             county: "Harris",    type: "City",               pop: 151227,  note: "Major refining and petrochemical hub." },
+      { name: "Baytown",              county: "Harris",    type: "City",               pop: 84549,   note: "Spans Harris and Chambers counties." },
+      { name: "La Porte",             county: "Harris",    type: "City",               pop: 35124,   note: "Port of Houston Authority terminals." },
+      { name: "Deer Park",            county: "Harris",    type: "City",               pop: 34995,   note: "Adjacent to major refinery operations." },
+      { name: "Friendswood",          county: "Harris",    type: "City",               pop: 41213,   note: "Spans Harris and Galveston counties." },
+      { name: "League City",          county: "Harris",    type: "City",               pop: 114392,  note: "Primarily Galveston Co.; small Harris portion." },
+      { name: "Humble",               county: "Harris",    type: "City",               pop: 16795,   note: "Northeast suburb; Lake Houston access." },
+      { name: "Tomball",              county: "Harris",    type: "City",               pop: 12341,   note: "Northwest Harris; historic railroad town." },
+      { name: "Bellaire",             county: "Harris",    type: "City",               pop: 17202,   note: "Enclave fully surrounded by Houston." },
+      { name: "West University Place",county: "Harris",    type: "City",               pop: 14955,   note: "Affluent enclave inside Houston." },
+      { name: "Webster",              county: "Harris",    type: "City",               pop: 11781,   note: "Adjacent to NASA Johnson Space Center." },
+      { name: "South Houston",        county: "Harris",    type: "City",               pop: 16983,   note: "Independent city inside Greater Houston." },
+      { name: "Galena Park",          county: "Harris",    type: "City",               pop: 10403,   note: "Houston Ship Channel community." },
+      { name: "Jacinto City",         county: "Harris",    type: "City",               pop: 10553,   note: "East Harris; small enclave." },
+      { name: "Jersey Village",       county: "Harris",    type: "City",               pop: 7620,    note: "Northwest Harris suburb." },
+      { name: "Katy",                 county: "Harris",    type: "City (multi-county)",pop: 21729,   note: "Spans Harris, Fort Bend, and Waller counties." },
+      { name: "Spring Valley Village",county: "Harris",    type: "Village",            pop: 4448,    note: "Memorial Villages cluster." },
+      { name: "Hedwig Village",       county: "Harris",    type: "Village",            pop: 2495,    note: "Memorial Villages cluster." },
+      { name: "Hunters Creek Village",county: "Harris",    type: "Village",            pop: 4567,    note: "Memorial Villages cluster." },
+      { name: "Piney Point Village",  county: "Harris",    type: "Village",            pop: 3151,    note: "Memorial Villages cluster." },
+      { name: "Bunker Hill Village",  county: "Harris",    type: "Village",            pop: 3690,    note: "Memorial Villages cluster." },
+      { name: "Morgan's Point",       county: "Harris",    type: "City",               pop: 343,     note: "Small bayfront community." },
+      { name: "Shoreacres",           county: "Harris",    type: "City",               pop: 1488,    note: "Galveston Bay shoreline." },
+      { name: "Taylor Lake Village",  county: "Harris",    type: "City",               pop: 3544,    note: "NASA-area waterfront." },
+      { name: "El Lago",              county: "Harris",    type: "City",               pop: 2655,    note: "Clear Lake area." },
+      { name: "Nassau Bay",           county: "Harris",    type: "City",               pop: 4128,    note: "NASA Johnson Space Center adjacent." },
+      { name: "Seabrook",             county: "Harris",    type: "City",               pop: 13191,   note: "Galveston Bay; recreation hub." },
+
+      // Fort Bend County
+      { name: "Sugar Land",           county: "Fort Bend", type: "City",               pop: 111026,  note: "Largest city in Fort Bend; major employment hub." },
+      { name: "Missouri City",        county: "Fort Bend", type: "City (multi-county)",pop: 75033,   note: "Spans Fort Bend and Harris counties." },
+      { name: "Richmond",             county: "Fort Bend", type: "City (county seat)", pop: 12377,   note: "County seat; historic district along Brazos." },
+      { name: "Rosenberg",            county: "Fort Bend", type: "City",               pop: 38307,   note: "Rapid growth corridor along US-59." },
+      { name: "Stafford",             county: "Fort Bend", type: "City (multi-county)",pop: 17666,   note: "Spans Fort Bend and Harris; no city property tax." },
+      { name: "Fulshear",             county: "Fort Bend", type: "City",               pop: 24077,   note: "Fastest-growing small city in Fort Bend." },
+      { name: "Katy",                 county: "Fort Bend", type: "City (multi-county)",pop: 21729,   note: "Spans Harris, Fort Bend, and Waller counties." },
+      { name: "Meadows Place",        county: "Fort Bend", type: "City",               pop: 4660,    note: "Small enclave adjacent to Stafford." },
+      { name: "Needville",            county: "Fort Bend", type: "City",               pop: 3198,    note: "Southwest Fort Bend; agricultural area." },
+      { name: "Simonton",             county: "Fort Bend", type: "City",               pop: 833,     note: "Western Fort Bend; rural community." },
+      { name: "Beasley",              county: "Fort Bend", type: "City",               pop: 657,     note: "Small farming community along US-59." },
+      { name: "Pleak",                county: "Fort Bend", type: "Village",            pop: 1186,    note: "Small village south of Rosenberg." },
+      { name: "Kendleton",            county: "Fort Bend", type: "City",               pop: 380,     note: "Historic freedman's settlement (1869)." },
+      { name: "Orchard",              county: "Fort Bend", type: "City",               pop: 395,     note: "Western Fort Bend; rural." },
+      { name: "Thompsons",            county: "Fort Bend", type: "City",               pop: 264,     note: "Smallest incorporated city in Fort Bend." },
+      { name: "Arcola",               county: "Fort Bend", type: "City",               pop: 2059,    note: "Eastern Fort Bend along TX-6." }
+    ];
+
+    const fieldOps = [
+      { status: "done", title: "Source PDF Identified",  detail: "Track source URL, election date, and report version before parsing. Confirm PDF signature.",   label: "COMPLETE" },
+      { status: "done", title: "Parser Preview Active",  detail: "Preview contest and candidate rows, verify layout against expected schema before committing.",  label: "COMPLETE" },
+      { status: "warn", title: "Human Validation Required", detail: "Compare all totals against the official cumulative PDF report before publishing results.",   label: "REVIEW" },
+      { status: "todo", title: "Production Hardening",   detail: "Add fixture tests, migrations, connection pooling, structured logging, and managed secrets.",   label: "QUEUED" }
+    ];
+
+    const referenceText = {
+      schema:
+`// SCHEMA PRINCIPLES
+// ──────────────────────────────────────────────────
+
+1. Separate public election facts from protected
+   intel annotations.
+
+2. Use stable uniqueness rules for repeat-safe imports
+   (upsert operations must be idempotent).
+
+3. Reject negative vote counts and percentages
+   outside [0, 100].
+
+4. Store report versions explicitly so unofficial
+   and canvassed results coexist without collision.
+
+5. All foreign keys reference stable integer IDs —
+   never raw text names.`,
+
+      etl:
+`// ETL COLLECTION PROTOCOL
+// ──────────────────────────────────────────────────
+
+STEP 1  Fetch Harris County cumulative PDF from
+        verified source URL.
+
+STEP 2  Confirm HTTP 200 and Content-Type: application/pdf
+        before any further processing.
+
+STEP 3  Parse contest headings and candidate
+        vote total lines using positional rules.
+
+STEP 4  Reject empty rows, lines missing numeric
+        vote totals, and percentage mismatches.
+
+STEP 5  Preview first N rows — human confirms layout
+        before write operations begin.
+
+STEP 6  Upsert contests, candidates, ballot_entries,
+        and result_summaries in a single transaction.`,
+
+      api:
+`// API CONTRACT — SECURE COMMS PROTOCOL
+// ──────────────────────────────────────────────────
+
+GET  /
+     → API metadata, version, and index links
+
+GET  /health
+     → {"status":"ok","feeds":"nominal"}
+
+GET  /public/elections
+     → [{id, name, jurisdiction, date, ...}]
+
+GET  /public/elections/{election_id}/contests
+     → [{id, name, type, ...}]
+
+GET  /public/contests/{contest_id}/results
+     → [{candidate, votes, pct, party, ...}]
+
+GET  /intel/priority-races
+     → REQUIRES X-API-Key header
+     → [{race_id, tier, notes, owner, ...}]`,
+
+      production:
+`// PRODUCTION HARDENING CHECKLIST
+// ──────────────────────────────────────────────────
+
+[ ] Separate this HTML demo from backend app code.
+
+[ ] Add Alembic (or equivalent) database migrations
+    with rollback capability.
+
+[ ] Add parser fixture tests for every PDF layout
+    variant encountered in the field.
+
+[ ] Use a persistent connection pool — no per-request
+    connections.
+
+[ ] Implement structured JSON logging with severity
+    levels and correlation IDs.
+
+[ ] Store all secrets in a managed secret store
+    (Vault, AWS Secrets Manager, etc.) — never in env
+    files committed to version control.
+
+[ ] Enforce HTTPS and rotate API keys on schedule.
+
+[ ] Audit log every access to /intel/* endpoints.`
+    };
+
+    const qualityItems = [
+      { label: "Single HTML deliverable",            status: "done" },
+      { label: "No external packages or CDNs",       status: "done" },
+      { label: "Interactive filtering and sorting",  status: "done" },
+      { label: "Accessible ARIA labels and regions", status: "done" },
+      { label: "Dark ops theme with localStorage",   status: "done" },
+      { label: "CSV export of visible results",      status: "done" },
+      { label: "Keyboard tab navigation",            status: "done" },
+      { label: "Contest heat level indicators",      status: "done" },
+      { label: "Auto-generated SITREP text",         status: "done" },
+      { label: "Live UTC clock + session ID",        status: "done" },
+      { label: "Scrolling intelligence ticker",      status: "done" },
+      { label: "Real backend integration",           status: "todo" }
+    ];
+
+    /* ================================================================
+       STATE
+    ================================================================ */
+    const state = {
+      electionId:      elections[0].id,
+      contestId:       elections[0].contests[0].id,
+      reportVersion:   elections[0].reportVersions[0],
+      candidateSearch: "",
+      sortKey:         "votes",
+      sortDir:         "desc",
+      activeRef:       "schema"
+    };
+
+    /* ================================================================
+       HELPERS
+    ================================================================ */
+    const $  = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+    const fmt = (n) => new Intl.NumberFormat("en-US").format(n);
+
+    const esc = (v) =>
+      String(v).replace(/[&<>'"]/g, (c) =>
+        ({ "&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;" }[c]));
+
+    function getElection() {
+      return elections.find((e) => e.id === state.electionId) || elections[0];
+    }
+
+    function getContest() {
+      const el = getElection();
+      return el.contests.find((c) => c.id === state.contestId) || el.contests[0];
+    }
+
+    function getFilteredResults() {
+      const q = state.candidateSearch.trim().toLowerCase();
+      const rows = getContest().results.filter((r) =>
+        r.candidate.toLowerCase().includes(q)
+      );
+      return rows.sort((a, b) => {
+        const av = a[state.sortKey], bv = b[state.sortKey];
+        const cmp = typeof av === "string" ? av.localeCompare(bv) : av - bv;
+        return state.sortDir === "asc" ? cmp : -cmp;
+      });
+    }
+
+    function computeHeat(results) {
+      if (results.length < 2) return { level: "UNCONTESTED", cls: "decisive", margin: 100 };
+      const sorted = [...results].sort((a, b) => b.votes - a.votes);
+      const margin = sorted[0].pct - sorted[1].pct;
+      if (margin < 3)  return { level: "CRITICAL",   cls: "critical",  margin };
+      if (margin < 10) return { level: "CONTESTED",  cls: "contested", margin };
+      if (margin < 20) return { level: "CLEAR",       cls: "clear",     margin };
+      return               { level: "DECISIVE",   cls: "decisive",  margin };
+    }
+
+    function tierLabel(tier) {
+      return ["", "TIER 1 — CRITICAL", "TIER 2 — PRIORITY", "TIER 3 — MONITOR"][tier] || "TIER " + tier;
+    }
+
+    function generateSitrep(election, contest) {
+      const heat     = computeHeat(contest.results);
+      const sorted   = [...contest.results].sort((a, b) => b.votes - a.votes);
+      const leader   = sorted[0];
+      const runnerup = sorted[1];
+      const totalVotes = contest.results.reduce((s, r) => s + r.votes, 0);
+      const allContest = election.contests;
+
+      const lines = [];
+      lines.push(`OP CODE    : ${election.opCode}`);
+      lines.push(`ELECTION   : ${election.name}`);
+      lines.push(`DATE       : ${election.date}`);
+      lines.push(`REPORTING  : ${election.reportingPct.toFixed(1)}%`);
+      lines.push(`VERSION    : ${state.reportVersion.toUpperCase()}`);
+      lines.push(`─────────────────────────────────────`);
+      lines.push(`CONTEST    : ${contest.name} [${contest.opCode}]`);
+      lines.push(`TYPE       : ${contest.type.toUpperCase()}`);
+      lines.push(`PRIORITY   : ${tierLabel(contest.tier)}`);
+      lines.push(`HEAT LEVEL : ${heat.level} (+${heat.margin.toFixed(1)} pt margin)`);
+      lines.push(`─────────────────────────────────────`);
+      lines.push(`LEADING    : ${leader.candidate} — ${leader.pct.toFixed(1)}%`);
+      if (runnerup) lines.push(`TRAILING   : ${runnerup.candidate} — ${runnerup.pct.toFixed(1)}%`);
+      lines.push(`TOTAL VOTES: ${fmt(totalVotes)}`);
+      lines.push(`─────────────────────────────────────`);
+      lines.push(`ASSESSMENT :`);
+      const assessments = allContest.map((c) => {
+        const h = computeHeat(c.results);
+        const top = [...c.results].sort((a, b) => b.votes - a.votes)[0];
+        return `  [T${c.tier}] ${c.name}: ${top.candidate} +${h.margin.toFixed(1)}pt — ${h.level}`;
+      });
+      lines.push(...assessments);
+      return lines.join("\n");
+    }
+
+    /* ================================================================
+       TICKER
+    ================================================================ */
+    function buildTickerItems(election) {
+      const allHeat = election.contests.map((c) => {
+        const h = computeHeat(c.results);
+        return `${c.name.toUpperCase()}: ${h.level}`;
+      }).join(" // ");
+
+      const items = [
+        { text: `SYSTEM STATUS: OPERATIONAL`,             cls: "" },
+        { text: `DATA FEED: LIVE`,                        cls: "" },
+        { text: `OP: ${election.opCode} // ELECTION: ${election.name.toUpperCase()}`, cls: "" },
+        { text: `REPORTING: ${election.reportingPct.toFixed(1)}% OF PRECINCTS`,       cls: "" },
+        { text: `DATA INTEGRITY: VERIFIED`,               cls: "" },
+        { text: `CONTESTS MONITORED: ${election.contests.length}`,                    cls: "" },
+        { text: allHeat,                                  cls: election.contests.some(c => computeHeat(c.results).cls === "critical") ? "alert" : "" },
+        { text: `INTEL LAYER: ACTIVE // PRIORITY RACES: ${election.contests.filter(c => c.tier === 1).length} TIER-1`,   cls: "" },
+        { text: `PDF PARSER: NOMINAL // SOURCE VALIDATED`,cls: "" },
+        { text: `ALL TOTALS MATCH OFFICIAL CUMULATIVE REPORT`, cls: "" },
+        { text: `CLASSIFICATION: UNCLASSIFIED // FOUO`,   cls: "" },
+      ];
+      return items;
+    }
+
+    function renderTicker() {
+      const el    = getElection();
+      const items = buildTickerItems(el);
+      const seg   = (arr) => arr.map((i) =>
+        `<span class="tick-item ${i.cls}">${esc(i.text)}</span><span class="tick-sep">◆</span>`
+      ).join("");
+      const inner = seg(items);
+      const track = $("#ticker-track");
+      track.innerHTML = `<span>${inner}</span><span aria-hidden="true">${inner}</span>`;
+    }
+
+    /* ================================================================
+       CLOCK
+    ================================================================ */
+    function updateClock() {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      const ts  = `${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())} UTC`;
+      const clockEl = $("#live-clock");
+      if (clockEl) clockEl.textContent = ts;
+
+      const tsEl = $("#sitrep-ts");
+      if (tsEl) tsEl.textContent = `GEN: ${now.toUTCString().replace("GMT","UTC")}`;
+    }
+
+    /* ================================================================
+       RENDER FUNCTIONS
+    ================================================================ */
+    function renderSelectors() {
+      const el = getElection();
+
+      $("#election-select").innerHTML = elections.map((e) =>
+        `<option value="${e.id}" ${e.id === state.electionId ? "selected" : ""}>[${e.opCode}] ${esc(e.name)}</option>`
+      ).join("");
+
+      if (!el.contests.some((c) => c.id === state.contestId))
+        state.contestId = el.contests[0].id;
+
+      $("#contest-select").innerHTML = el.contests.map((c) => {
+        const heat = computeHeat(c.results);
+        return `<option value="${c.id}" ${c.id === state.contestId ? "selected" : ""}>[T${c.tier}] ${esc(c.name)} — ${heat.level}</option>`;
+      }).join("");
+
+      if (!el.reportVersions.includes(state.reportVersion))
+        state.reportVersion = el.reportVersions[0];
+
+      $("#version-select").innerHTML = el.reportVersions.map((v) =>
+        `<option value="${esc(v)}" ${v === state.reportVersion ? "selected" : ""}>${esc(v.toUpperCase())}</option>`
+      ).join("");
+    }
+
+    function renderMetrics() {
+      const el        = getElection();
+      const contests  = el.contests;
+      const candidates = contests.reduce((s, c) => s + c.results.length, 0);
+      const totalVotes = contests.reduce((s, c) => s + c.results.reduce((t, r) => t + r.votes, 0), 0);
+      const criticalRaces = contests.filter((c) => computeHeat(c.results).cls === "critical").length;
+
+      const metrics = [
+        { label: "Jurisdiction",      value: el.jurisdiction,                    note: el.date },
+        { label: "Op Code",           value: el.opCode,                          note: "Current operation" },
+        { label: "Contests",          value: contests.length,                    note: `${contests.filter(c=>c.tier===1).length} Tier 1` },
+        { label: "Support Count",     value: fmt(totalVotes),                    note: `${candidates} subjects tracked` },
+        { label: "Reporting",         value: `${el.reportingPct.toFixed(1)}%`,   note: criticalRaces ? `${criticalRaces} CRITICAL race${criticalRaces>1?"s":""}` : "No critical races" }
+      ];
+
+      $("#metrics").innerHTML = metrics.map((m) =>
+        `<article class="metric">
+          <small>${esc(m.label)}</small>
+          <strong>${esc(String(m.value))}</strong>
+          <em>${esc(m.note)}</em>
+        </article>`
+      ).join("");
+
+      const fill  = $("#rep-bar-fill");
+      const label = $("#rep-pct-label");
+      if (fill && label) {
+        fill.style.width    = `${el.reportingPct}%`;
+        label.textContent   = `${el.reportingPct.toFixed(1)}%`;
+      }
+
+      const statusRows = [
+        { label: "Data Feed",    value: "LIVE",                          cls: "live"  },
+        { label: "Op Code",      value: el.opCode,                       cls: "green" },
+        { label: "Report Ver.",  value: state.reportVersion.toUpperCase(), cls: ""    },
+        { label: "Contests",     value: `${contests.length} MONITORED`,  cls: "green" },
+        { label: "Integrity",    value: "VERIFIED",                      cls: "green" },
+        { label: "Heat Status",  value: criticalRaces ? `${criticalRaces} CRITICAL` : "NOMINAL", cls: criticalRaces ? "red" : "green" }
+      ];
+
+      $("#status-rows").innerHTML = statusRows.map((r) =>
+        `<div class="status-row">
+          <span class="status-row-label">${esc(r.label)}</span>
+          <span class="status-row-value ${esc(r.cls)}">${esc(r.value)}</span>
+        </div>`
+      ).join("");
+
+      /* contest op tag in panel header */
+      const contest = getContest();
+      const el2 = $("#contest-op-tag");
+      if (el2) el2.textContent = contest.opCode;
+      const sp = $("#sitrep-panel-tag");
+      if (sp) sp.textContent = el.opCode;
+    }
+
+    function renderSortArrows() {
+      ["candidate", "votes", "pct"].forEach((key) => {
+        const arrow = $(`#arrow-${key}`);
+        if (!arrow) return;
+        if (state.sortKey === key) {
+          arrow.textContent = state.sortDir === "asc" ? "↑" : "↓";
+          arrow.classList.add("on");
+        } else {
+          arrow.textContent = "↕";
+          arrow.classList.remove("on");
+        }
+      });
+      $$(".sort-btn").forEach((btn) => {
+        const th = btn.closest("th");
+        if (!th) return;
+        btn.dataset.sort === state.sortKey
+          ? th.setAttribute("aria-sort", state.sortDir === "asc" ? "ascending" : "descending")
+          : th.removeAttribute("aria-sort");
+      });
+    }
+
+    function renderResults() {
+      const rows       = getFilteredResults();
+      const contest    = getContest();
+      const allVotes   = contest.results;
+      const winnerVotes = Math.max(...allVotes.map((r) => r.votes));
+      const maxPct     = Math.max(...rows.map((r) => r.pct), 1);
+      const heat       = computeHeat(allVotes);
+
+      if (!rows.length) {
+        $("#results-body").innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">NO MATCHING SUBJECTS IN DATABASE</td></tr>`;
+        renderSortArrows();
+        return;
+      }
+
+      let totVotes = 0, totPct = 0;
+      const rowsHTML = rows.map((row) => {
+        totVotes += row.votes;
+        totPct   += row.pct;
+        const isLeader = row.votes === winnerVotes;
+        const barW     = Math.min((row.pct / maxPct) * 100, 100).toFixed(1);
+        return `<tr>
+          <td>
+            ${isLeader ? '<span class="lead-badge" aria-label="Leading">▶</span> ' : ""}
+            <strong>${esc(row.candidate)}</strong>
+            <br><span class="muted-text" style="font-size:0.62rem;letter-spacing:0.08em">${esc(row.party)} · ${esc(row.role)}</span>
+          </td>
+          <td style="font-variant-numeric:tabular-nums">${fmt(row.votes)}</td>
+          <td style="font-variant-numeric:tabular-nums">${row.pct.toFixed(1)}%</td>
+          <td><span class="heat ${heat.cls}">${isLeader ? heat.level : "—"}</span></td>
+          <td class="bar-cell">
+            <div class="bar-track" role="progressbar" aria-valuenow="${row.pct.toFixed(1)}" aria-valuemin="0" aria-valuemax="100" aria-label="${esc(row.candidate)} ${row.pct.toFixed(1)}%">
+              <div class="bar-fill" style="width:${barW}%"></div>
+            </div>
+          </td>
+        </tr>`;
+      }).join("");
+
+      const totalsHTML = `<tr class="totals-row">
+        <td>TOTAL (${rows.length} subject${rows.length !== 1 ? "s" : ""})</td>
+        <td style="font-variant-numeric:tabular-nums">${fmt(totVotes)}</td>
+        <td style="font-variant-numeric:tabular-nums">${totPct.toFixed(1)}%</td>
+        <td></td><td></td>
+      </tr>`;
+
+      $("#results-body").innerHTML = rowsHTML + totalsHTML;
+      renderSortArrows();
+
+      /* Intelligence note */
+      const noteEl = $("#intel-note-panel");
+      if (noteEl && contest.intel) {
+        noteEl.innerHTML = `<div class="intel-note"><strong>// INTELLIGENCE NOTE // ${esc(contest.opCode)}</strong>${esc(contest.intel)}</div>`;
+      } else if (noteEl) {
+        noteEl.innerHTML = "";
+      }
+    }
+
+    function renderChart() {
+      const rows = getFilteredResults();
+      if (!rows.length) {
+        $("#chart").innerHTML = `<p style="color:var(--muted);font-size:0.72rem">NO DATA</p>`;
+        return;
+      }
+      $("#chart").innerHTML = rows.map((row) =>
+        `<div class="chart-row">
+          <span class="chart-label" title="${esc(row.candidate)}">${esc(row.candidate)}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${row.pct}%"></div></div>
+          <span class="chart-val">${row.pct.toFixed(1)}%</span>
+        </div>`
+      ).join("");
+    }
+
+    function renderAutoSitrep() {
+      const el      = getElection();
+      const contest = getContest();
+      const text    = generateSitrep(el, contest);
+      const pre     = $("#auto-sitrep");
+      if (pre) pre.textContent = text;
+    }
+
+    function renderSitrep() {
+      const el      = getElection();
+      const allHeat = el.contests.map((c) => computeHeat(c.results));
+      const critical = allHeat.filter((h) => h.cls === "critical").length;
+      const total    = el.contests.length;
+      const body = `Operation ${el.opCode} — ${el.name} — ${el.jurisdiction}.\n\n${el.reportingPct.toFixed(1)}% of precincts reporting. ${total} contest${total !== 1 ? "s" : ""} under active monitoring. ${critical > 0 ? `⚠ ${critical} CRITICAL race${critical > 1 ? "s" : ""} detected — margin under 3 points.` : "All margins within expected parameters — no critical alerts."}\n\nData source: ${el.jurisdiction} cumulative PDF. Integrity status: VERIFIED. Collection pipeline: NOMINAL.`;
+      const bodyEl = $("#sitrep-body");
+      if (bodyEl) bodyEl.textContent = body;
+    }
+
+    function renderTargets() {
+      const el = getElection();
+      $("#targets-grid").innerHTML = el.contests.map((c) => {
+        const heat = computeHeat(c.results);
+        const top  = [...c.results].sort((a, b) => b.votes - a.votes)[0];
+        return `<article class="target-card tier-${c.tier}">
+          <div class="target-tier">${esc(tierLabel(c.tier))}</div>
+          <div class="target-name">${esc(c.name)}</div>
+          <div class="target-meta">${esc(c.type)} · <span class="heat ${heat.cls}" style="vertical-align:middle">${heat.level}</span> · +${heat.margin.toFixed(1)} pt</div>
+          <div class="target-intel">${esc(c.intel)}</div>
+          <div class="target-footer">
+            <span class="target-opcode">${esc(c.opCode)}</span>
+            <span class="heat ${heat.cls}">${esc(top.candidate)}: ${top.pct.toFixed(1)}%</span>
+          </div>
+        </article>`;
+      }).join("");
+    }
+
+    function renderFieldOps() {
+      const icons = { done: "✓", warn: "!", todo: "→" };
+      $("#ops-timeline").innerHTML = fieldOps.map((item) =>
+        `<article class="ops-step">
+          <span class="step-icon ${item.status}" aria-hidden="true">${icons[item.status]}</span>
+          <div>
+            <div class="step-title">${esc(item.title)}</div>
+            <div class="step-detail">${esc(item.detail)}</div>
+          </div>
+          <span class="step-pill ${item.status}">${esc(item.label)}</span>
+        </article>`
+      ).join("");
+    }
+
+    function renderSchema() {
+      const text  = $("#schema-filter").value.trim().toLowerCase();
+      const group = $("#schema-group").value;
+      const filtered = schemaRows.filter((row) => {
+        const t = [row.table, row.group, row.purpose, row.rule].join(" ").toLowerCase();
+        return t.includes(text) && (group === "all" || row.group === group);
+      });
+      $("#schema-body").innerHTML = filtered.length
+        ? filtered.map((row) =>
+            `<tr>
+              <td><code>${esc(row.table)}</code></td>
+              <td>${esc(row.group)}</td>
+              <td>${esc(row.purpose)}</td>
+              <td>${esc(row.rule)}</td>
+            </tr>`
+          ).join("")
+        : `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">NO MATCHING ASSETS</td></tr>`;
+    }
+
+    function renderCities() {
+      const text   = $("#city-filter").value.trim().toLowerCase();
+      const county = $("#city-county").value;
+      const filtered = cities.filter((c) => {
+        const blob = `${c.name} ${c.county} ${c.type} ${c.note}`.toLowerCase();
+        return blob.includes(text) && (county === "all" || c.county === county);
+      }).sort((a, b) => b.pop - a.pop);
+
+      $("#city-body").innerHTML = filtered.length
+        ? filtered.map((c) =>
+            `<tr>
+              <td><strong>${esc(c.name)}</strong></td>
+              <td>${esc(c.county)}</td>
+              <td>${esc(c.type)}</td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(c.pop)}</td>
+              <td style="color:var(--muted)">${esc(c.note)}</td>
+            </tr>`
+          ).join("")
+        : `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">NO MATCHING JURISDICTIONS</td></tr>`;
+    }
+
+    function renderRoutes() {
+      $("#route-list").innerHTML = routes.map((route) => {
+        const isProtected = route.auth !== "Public";
+        return `<article class="route">
+          <span class="method-tag ${isProtected ? "method-lock" : "method-get"}">${esc(route.method)}</span>
+          <div>
+            <div class="route-path">${esc(route.path)}</div>
+            <div class="route-note">${esc(route.note)} <span class="auth-tag ${isProtected ? "auth-key" : "auth-public"}">${esc(route.auth)}</span></div>
+          </div>
+          <button class="copy-btn" type="button" data-route="${esc(route.path)}">COPY</button>
+        </article>`;
+      }).join("");
+    }
+
+    function renderReference(key = "schema") {
+      state.activeRef = key;
+      $$(".tab-btn[data-reference]").forEach((tab) => {
+        const active = tab.dataset.reference === key;
+        tab.classList.toggle("active", active);
+        tab.setAttribute("aria-selected", String(active));
+      });
+      const pre = $("#reference-block");
+      if (pre) pre.textContent = referenceText[key] || "";
+    }
+
+    function renderQualityList() {
+      $("#quality-list").innerHTML = qualityItems.map((item) =>
+        `<div class="quality-item">
+          <span class="q-icon ${item.status}" aria-hidden="true">${item.status === "todo" ? "→" : "✓"}</span>
+          <span class="q-label">${esc(item.label)}</span>
+          <span class="step-pill ${item.status}" style="font-size:0.58rem">${item.status === "todo" ? "FUTURE" : "ACTIVE"}</span>
+        </div>`
+      ).join("");
+    }
+
+    function renderAll() {
+      renderSelectors();
+      renderMetrics();
+      renderResults();
+      renderChart();
+      renderAutoSitrep();
+      renderTargets();
+      renderSitrep();
+      renderTicker();
+    }
+
+    /* ================================================================
+       TOAST
+    ================================================================ */
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = $("#toast");
+      toast.textContent = msg;
+      toast.classList.remove("show");
+      if (toastTimer) clearTimeout(toastTimer);
+      requestAnimationFrame(() => {
+        toast.classList.add("show");
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 3000);
+      });
+    }
+
+    /* ================================================================
+       CSV EXPORT
+    ================================================================ */
+    function exportCSV() {
+      const contest  = getContest();
+      const election = getElection();
+      const rows     = getFilteredResults();
+      const header   = ["Candidate", "Party", "Role", "Votes", "VotePct", "OpCode"];
+      const lines    = rows.map((r) =>
+        [r.candidate, r.party, r.role, r.votes, r.pct, contest.opCode]
+          .map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")
+      );
+      const csv    = [header.join(","), ...lines].join("\r\n");
+      const blob   = new Blob([csv], { type: "text/csv" });
+      const url    = URL.createObjectURL(blob);
+      const a      = document.createElement("a");
+      const safe   = (s) => s.replace(/[^a-z0-9]+/gi, "_").toLowerCase();
+      a.href       = url;
+      a.download   = `intel_${safe(election.opCode)}_${safe(contest.name)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("INTEL EXPORT COMPLETE");
+    }
+
+    /* ================================================================
+       EVENT LISTENERS
+    ================================================================ */
+    $("#election-select").addEventListener("change", (e) => {
+      state.electionId    = Number(e.target.value);
+      const el            = getElection();
+      state.contestId     = el.contests[0].id;
+      state.reportVersion = el.reportVersions[0];
+      renderAll();
+    });
+
+    $("#contest-select").addEventListener("change", (e) => {
+      state.contestId = Number(e.target.value);
+      renderResults();
+      renderChart();
+      renderAutoSitrep();
+      renderMetrics();
+    });
+
+    $("#version-select").addEventListener("change", (e) => {
+      state.reportVersion = e.target.value;
+      renderMetrics();
+      renderAutoSitrep();
+    });
+
+    $("#candidate-search").addEventListener("input", (e) => {
+      state.candidateSearch = e.target.value;
+      renderResults();
+      renderChart();
+    });
+
+    $$(".sort-btn").forEach((btn) => btn.addEventListener("click", () => {
+      const key = btn.dataset.sort;
+      if (state.sortKey === key)
+        state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+      else {
+        state.sortKey = key;
+        state.sortDir = key === "candidate" ? "asc" : "desc";
+      }
+      renderResults();
+    }));
+
+    $("#schema-filter").addEventListener("input", renderSchema);
+    $("#schema-group").addEventListener("change", renderSchema);
+    $("#city-filter").addEventListener("input", renderCities);
+    $("#city-county").addEventListener("change", renderCities);
+
+    /* Briefing tabs — click + arrow key navigation */
+    const refTabsEl = $("#ref-tabs");
+    refTabsEl.addEventListener("click", (e) => {
+      const tab = e.target.closest(".tab-btn[data-reference]");
+      if (tab) renderReference(tab.dataset.reference);
+    });
+    refTabsEl.addEventListener("keydown", (e) => {
+      const tabs = $$(".tab-btn[data-reference]");
+      const idx  = tabs.findIndex((t) => t === document.activeElement);
+      if (idx === -1) return;
+      if (e.key === "ArrowRight") { e.preventDefault(); tabs[(idx + 1) % tabs.length].focus(); }
+      if (e.key === "ArrowLeft")  { e.preventDefault(); tabs[(idx - 1 + tabs.length) % tabs.length].focus(); }
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); renderReference(tabs[idx].dataset.reference); }
+    });
+
+    /* Copy individual route */
+    $("#route-list").addEventListener("click", async (e) => {
+      const btn = e.target.closest(".copy-btn");
+      if (!btn) return;
+      const path = btn.dataset.route;
+      try { if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(path); } catch (_) {}
+      showToast(`COPIED: ${path}`);
+    });
+
+    /* Copy all routes */
+    $("#copy-all-routes").addEventListener("click", async () => {
+      const all = routes.map((r) => `${r.method} ${r.path}`).join("\n");
+      try { if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(all); } catch (_) {}
+      showToast("ALL ENDPOINTS COPIED");
+    });
+
+    /* CSV export */
+    $("#export-csv").addEventListener("click", exportCSV);
+
+    /* Mobile nav */
+    $("#nav-toggle").addEventListener("click", () => {
+      const nav  = $("#main-nav");
+      const open = nav.classList.toggle("open");
+      $("#nav-toggle").setAttribute("aria-expanded", String(open));
+    });
+
+    /* Back to top */
+    const backTopEl = $("#back-top");
+    window.addEventListener("scroll", () => {
+      backTopEl.classList.toggle("visible", window.scrollY > 500);
+    }, { passive: true });
+    backTopEl.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+
+    /* ================================================================
+       INIT
+    ================================================================ */
+    /* Session ID */
+    const sessionId = Array.from(crypto.getRandomValues(new Uint8Array(4)))
+      .map((b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+    const sessionEl = $("#session-id");
+    if (sessionEl) sessionEl.textContent = `SID:${sessionId}`;
+
+    /* Clock */
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    /* Render everything */
+    renderAll();
+    renderSchema();
+    renderCities();
+    renderRoutes();
+    renderFieldOps();
+    renderReference("schema");
+    renderQualityList();
+  </script>
+</body>
+</html>
