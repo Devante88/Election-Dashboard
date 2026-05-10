@@ -956,7 +956,7 @@
         <div class="status-cluster" aria-label="System status">
           <span class="dot-live" aria-label="System active"></span>
           <span>FEED: <span class="status-row-value green">LIVE</span></span>
-          <span id="live-clock" aria-live="off" aria-label="Current UTC time">--:--:-- UTC</span>
+          <span id="live-clock" aria-live="off" aria-label="Current Central time">--:--:-- CT</span>
           <span class="session-id" id="session-id"></span>
         </div>
         <a class="btn primary" href="#dashboard">ENTER OPS</a>
@@ -1554,7 +1554,7 @@ GET  /intel/priority-races
       { label: "Keyboard tab navigation",            status: "done" },
       { label: "Contest heat level indicators",      status: "done" },
       { label: "Auto-generated SITREP text",         status: "done" },
-      { label: "Live UTC clock + session ID",        status: "done" },
+      { label: "Live Central time clock + session ID", status: "done" },
       { label: "Scrolling intelligence ticker",      status: "done" },
       { label: "Real backend integration",           status: "todo" }
     ];
@@ -1694,13 +1694,26 @@ GET  /intel/priority-races
     ================================================================ */
     function updateClock() {
       const now = new Date();
-      const pad = (n) => String(n).padStart(2, "0");
-      const ts  = `${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())} UTC`;
+      const TZ  = "America/Chicago";
+
+      const timeFmt = new Intl.DateTimeFormat("en-US", {
+        timeZone: TZ, hour12: false,
+        hour: "2-digit", minute: "2-digit", second: "2-digit",
+        timeZoneName: "short"
+      });
+      const parts = Object.fromEntries(timeFmt.formatToParts(now).map(p => [p.type, p.value]));
+      const ts    = `${parts.hour}:${parts.minute}:${parts.second} ${parts.timeZoneName}`;
       const clockEl = $("#live-clock");
       if (clockEl) clockEl.textContent = ts;
 
+      const fullFmt = new Intl.DateTimeFormat("en-US", {
+        timeZone: TZ,
+        weekday: "short", year: "numeric", month: "short", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit",
+        hour12: false, timeZoneName: "short"
+      });
       const tsEl = $("#sitrep-ts");
-      if (tsEl) tsEl.textContent = `GEN: ${now.toUTCString().replace("GMT","UTC")}`;
+      if (tsEl) tsEl.textContent = `GEN: ${fullFmt.format(now)}`;
     }
 
     /* ================================================================
