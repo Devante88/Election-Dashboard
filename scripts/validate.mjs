@@ -113,14 +113,18 @@ async function renderCheck(data, geo) {
 
   const html = await readFile(path.join(ROOT, 'index.html'), 'utf8');
   const appSrc = await readFile(path.join(ROOT, 'assets/app.js'), 'utf8');
+  const upcoming = JSON.parse(await readFile(path.join(ROOT, 'data/upcoming.json'), 'utf8'));
 
   const dom = new JSDOM(html, { runScripts: 'outside-only', pretendToBeVisual: true });
   const { window } = dom;
-  window.fetch = async url => ({ ok: true, json: async () => (url.includes('geo') ? geo : data) });
+  window.fetch = async url => ({
+    ok: true,
+    json: async () => (url.includes('upcoming') ? upcoming : url.includes('geo') ? geo : data),
+  });
   window.Element.prototype.getBoundingClientRect = () => ({ left: 0, top: 0, width: 800, height: 700 });
 
   window.eval(appSrc);
-  await new Promise(r => setTimeout(r, 80)); // let async init() settle
+  await new Promise(r => setTimeout(r, 120)); // let async init() settle
 
   const doc = window.document;
   const err = doc.querySelector('#loadError');
