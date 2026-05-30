@@ -65,6 +65,7 @@ async function init() {
     state.data = data;
     state.geo = geo;
     state.year = data.meta.latestYear;
+    $('#search').disabled = false;
     renderStatic();
     renderYearPicker();
     renderAll();
@@ -145,7 +146,10 @@ function renderTrend() {
   const W = 560, H = 300, padL = 40, padR = 16, padT = 28, padB = 46;
   const plotW = W - padL - padR, plotH = H - padT - padB;
   const series = state.data.statewide;
-  const yMax = 70;
+  // Fit the axis to the data (rounded up to a 10s gridline, with headroom for
+  // the value label) so a high-share cycle can't overflow the plot.
+  const peak = Math.max(...series.flatMap(s => [s.gopPct, s.demPct]));
+  const yMax = Math.min(100, Math.max(50, Math.ceil((peak + 8) / 10) * 10));
   const y = v => padT + plotH * (1 - v / yMax);
 
   const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'xMidYMid meet' });
@@ -232,7 +236,15 @@ function renderMap() {
   for (const county of state.geo.counties) {
     const info = byFips.get(county.fips);
     const fill = info ? colorForMargin(info.m.marginPct) : '#2a3550';
-    svg.appendChild(svgEl('path', { class: 'county', d: pathFor(county, project), fill, 'data-fips': county.fips }));
+    // Keyboard- and screen-reader-accessible: focusable, with a full label.
+    const label = info
+      ? `${info.name} County: ${marginLabel(info.m.marginPct)}, ` +
+        `${fmt(info.m.gop)} Republican, ${fmt(info.m.dem)} Democratic, ${fmt(info.m.total)} total`
+      : `${county.name} County: no data`;
+    svg.appendChild(svgEl('path', {
+      class: 'county', d: pathFor(county, project), fill,
+      'data-fips': county.fips, tabindex: '0', role: 'img', 'aria-label': label,
+    }));
   }
 
   const host = $('#map');
@@ -241,28 +253,46 @@ function renderMap() {
 
   const tip = $('#mapTooltip');
   const wrap = $('#mapWrap');
-  svg.addEventListener('mousemove', ev => {
-    const path = ev.target.closest('path[data-fips]');
-    if (!path) { tip.hidden = true; return; }
-    const info = byFips.get(path.getAttribute('data-fips'));
-    if (!info) { tip.hidden = true; return; }
+
+  // Build the tooltip from DOM nodes (never innerHTML) so county names from the
+  // data can't inject markup; position it relative to the hovered/focused county.
+  const ttRow = (lab, val, cls) => el('div', { class: 'tt-row' }, [
+    el('span', { text: lab }), el('b', { class: cls || '', text: val }),
+  ]);
+  const showTip = (info, px, py) => {
     const m = info.m;
-    const winCls = m.winner === 'R' ? 'val-rep' : 'val-dem';
-    tip.innerHTML =
-      `<div class="tt-name">${info.name} County</div>` +
-      `<div class="tt-row"><span>Margin</span> <b class="${winCls}">${marginLabel(m.marginPct)}</b></div>` +
-      `<div class="tt-row"><span>Rep</span> <b>${fmt(m.gop)} (${pct(m.gopPct)})</b></div>` +
-      `<div class="tt-row"><span>Dem</span> <b>${fmt(m.dem)} (${pct(m.demPct)})</b></div>` +
-      `<div class="tt-row"><span>Total</span> <b>${fmt(m.total)}</b></div>`;
+    tip.replaceChildren(
+      el('div', { class: 'tt-name', text: `${info.name} County` }),
+      ttRow('Margin', marginLabel(m.marginPct), m.winner === 'R' ? 'val-rep' : 'val-dem'),
+      ttRow('Rep', `${fmt(m.gop)} (${pct(m.gopPct)})`),
+      ttRow('Dem', `${fmt(m.dem)} (${pct(m.demPct)})`),
+      ttRow('Total', fmt(m.total)),
+    );
     tip.hidden = false;
     const r = wrap.getBoundingClientRect();
-    let x = ev.clientX - r.left + 14;
-    const yy = ev.clientY - r.top + 14;
-    if (x + 180 > r.width) x = ev.clientX - r.left - 180;
-    tip.style.left = x + 'px';
+    let x = px - r.left + 14;
+    const yy = py - r.top + 14;
+    if (x + 180 > r.width) x = px - r.left - 180;
+    tip.style.left = Math.max(0, x) + 'px';
     tip.style.top = yy + 'px';
+  };
+  const hideTip = () => { tip.hidden = true; };
+  const infoFor = node => node && byFips.get(node.getAttribute('data-fips'));
+
+  svg.addEventListener('mousemove', ev => {
+    const info = infoFor(ev.target.closest('path[data-fips]'));
+    info ? showTip(info, ev.clientX, ev.clientY) : hideTip();
   });
-  svg.addEventListener('mouseleave', () => { tip.hidden = true; });
+  svg.addEventListener('mouseleave', hideTip);
+  // Keyboard focus: anchor the tooltip to the focused county's box.
+  svg.addEventListener('focusin', ev => {
+    const path = ev.target.closest('path[data-fips]');
+    const info = infoFor(path);
+    if (!info) return;
+    const b = path.getBoundingClientRect();
+    showTip(info, b.left + b.width / 2, b.top + b.height / 2);
+  });
+  svg.addEventListener('focusout', hideTip);
 
   const legend = $('#mapLegend');
   legend.innerHTML = '';
@@ -373,6 +403,9 @@ function renderTableHeader() {
 }
 
 function renderTable() {
+  // The #search handler can fire before init() resolves (or after it fails),
+  // when state.data is still null — bail rather than deref it.
+  if (!state.data) return;
   renderTableHeader();
   const rows = countyMetricsForYear(state.year)
     .filter(r => r.name.toLowerCase().includes(state.query));
@@ -404,6 +437,8 @@ function renderTable() {
   $('#tableCaption').textContent = `${rows.length} of ${state.data.meta.countyCount} counties · ${state.year}`;
 }
 
+// Disabled until init() loads data; the input handler guards on state.data too.
+$('#search').disabled = true;
 $('#search').addEventListener('input', e => {
   state.query = e.target.value.trim().toLowerCase();
   renderTable();

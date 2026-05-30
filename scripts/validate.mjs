@@ -22,11 +22,15 @@ const ok = (cond, msg) => {
 
 // Published official Texas statewide presidential totals (for sanity cross-check).
 // Sources: Texas Secretary of State canvass / Federal Election Commission summaries.
+//   independent: true  -> figure comes from a different source than our build
+//                         input, so the check can actually catch a discrepancy.
+//   independent: false -> our 2020/2024 build input IS this tabulation, so the
+//                         row is provenance confirmation, not independent proof.
 const OFFICIAL = {
-  2012: { gop: 4569843, dem: 3308124 },
-  2016: { gop: 4685047, dem: 3877868 },
-  2020: { gop: 5890347, dem: 5259126 },
-  2024: { gop: 6393597, dem: 4835250 },
+  2012: { gop: 4569843, dem: 3308124, independent: true },
+  2016: { gop: 4685047, dem: 3877868, independent: true },
+  2020: { gop: 5890347, dem: 5259126, independent: false },
+  2024: { gop: 6393597, dem: 4835250, independent: false },
 };
 
 async function main() {
@@ -76,7 +80,7 @@ async function main() {
   ok(/\b(CDT|CST)\b/.test(meta.generated), `meta.generated labeled Central (got "${meta.generated}")`);
 
   console.log('\nCross-check vs published official totals (tolerance 5%)');
-  console.log('  year   computed GOP / DEM        official GOP / DEM        delta');
+  console.log('  year   computed GOP / DEM        official GOP / DEM        delta      source');
   for (const s of statewide) {
     const off = OFFICIAL[s.year];
     const dG = Math.abs(s.gop - off.gop) / off.gop;
@@ -84,10 +88,16 @@ async function main() {
     console.log(
       `  ${s.year}  ${String(s.gop).padStart(8)} / ${String(s.dem).padStart(8)}   ` +
       `${String(off.gop).padStart(8)} / ${String(off.dem).padStart(8)}   ` +
-      `R ${(dG * 100).toFixed(2)}% / D ${(dD * 100).toFixed(2)}%`
+      `R ${(dG * 100).toFixed(2)}% / D ${(dD * 100).toFixed(2)}%   ` +
+      `${off.independent ? 'independent' : 'provenance (same source as build)'}`
     );
-    ok(dG < 0.05 && dD < 0.05, `${s.year}: within 5% of official GOP & DEM totals`);
+    const tag = off.independent ? '' : ' [provenance]';
+    ok(dG < 0.05 && dD < 0.05, `${s.year}: within 5% of official GOP & DEM totals${tag}`);
   }
+  // At least the two independent cross-checks (2012, 2016) must exist — they're
+  // the rows that can actually catch a data regression.
+  ok(Object.values(OFFICIAL).filter(o => o.independent).length >= 2,
+    'has >=2 independent official cross-checks');
 
   await renderCheck(data, geo);
 
@@ -121,6 +131,13 @@ async function renderCheck(data, geo) {
   ok(doc.querySelectorAll('#highlights .hl-card').length === 5, 'highlights render 5 cards');
   ok(doc.querySelectorAll('#tableBody tr').length === 254, 'table renders 254 rows');
   ok(doc.querySelectorAll('#yearPicker .year-btn').length === 4, 'year picker has 4 buttons');
+
+  // Accessibility: every county is keyboard-focusable and labeled for a reader.
+  const paths = [...doc.querySelectorAll('#map svg path')];
+  ok(paths.every(p => p.getAttribute('tabindex') === '0'), 'every county path is focusable');
+  ok(paths.every(p => (p.getAttribute('aria-label') || '').length > 0), 'every county path has an aria-label');
+  // Search is disabled until data loads, then re-enabled (no crash on early type).
+  ok(doc.querySelector('#search').disabled === false, 'search input enabled after load');
 }
 
 main().catch(err => { console.error(err); process.exit(1); });

@@ -101,6 +101,8 @@ body {
 .map svg { width: 100%; height: auto; display: block; }
 .county { stroke: #0d1320; stroke-width: .4; }
 .county:hover { stroke: #fff; stroke-width: 1.1; }
+.county:focus { outline: none; stroke: var(--accent); stroke-width: 1.4; }
+.county:focus-visible { stroke: var(--accent); stroke-width: 1.6; }
 .map-tooltip {
   position: absolute; pointer-events: none; background: #0a1120;
   border: 1px solid var(--border); border-radius: 10px; padding: 9px 11px;
