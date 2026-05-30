@@ -74,21 +74,48 @@ async function fetchText({ url, cache }) {
   }
 }
 
-// County names contain no commas, so a simple split is safe for these files.
-function parseCSV(text) {
+// Minimal RFC-4180-ish CSV: handles quoted fields and escaped quotes, and
+// fails loudly on a row whose column count doesn't match the header rather
+// than silently zero-filling missing cells.
+function splitCSVLine(line) {
+  const cells = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQ) {
+      if (ch === '"') {
+        if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false;
+      } else cur += ch;
+    } else if (ch === '"') inQ = true;
+    else if (ch === ',') { cells.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  cells.push(cur);
+  return cells;
+}
+
+function parseCSV(text, label = 'CSV') {
   const lines = text.trim().split(/\r?\n/);
-  const header = lines[0].split(',').map(h => h.trim());
-  return lines.slice(1).map(line => {
-    const cells = line.split(',');
+  const header = splitCSVLine(lines[0]).map(h => h.trim());
+  return lines.slice(1).map((line, i) => {
+    const cells = splitCSVLine(line);
+    if (cells.length !== header.length) {
+      throw new Error(`${label}: row ${i + 2} has ${cells.length} cells, expected ${header.length}`);
+    }
     const row = {};
-    header.forEach((h, i) => { row[h] = (cells[i] ?? '').trim(); });
+    header.forEach((h, j) => { row[h] = (cells[j] ?? '').trim(); });
     return row;
   });
 }
 
+// Parse an integer vote count, tolerating thousands separators / surrounding
+// quotes. An empty cell is a legitimate 0; a non-numeric cell is a data error.
 const num = v => {
-  const n = Number(String(v ?? '').trim());
-  return Number.isFinite(n) ? n : 0;
+  const s = String(v ?? '').trim().replace(/[",]/g, '');
+  if (s === '') return 0;
+  const n = Number(s);
+  if (!Number.isFinite(n)) throw new Error(`non-numeric vote value: ${JSON.stringify(v)}`);
+  return n;
 };
 
 const cleanName = s => String(s || '').replace(/\s+County$/i, '').trim();
@@ -167,9 +194,9 @@ async function main() {
 
   console.log('Fetching county results...');
   const [c2024, c2020, panel] = await Promise.all([
-    fetchText(SOURCES.y2024).then(parseCSV),
-    fetchText(SOURCES.y2020).then(parseCSV),
-    fetchText(SOURCES.panel).then(parseCSV),
+    fetchText(SOURCES.y2024).then(t => parseCSV(t, '2024')),
+    fetchText(SOURCES.y2020).then(t => parseCSV(t, '2020')),
+    fetchText(SOURCES.panel).then(t => parseCSV(t, '08-16 panel')),
   ]);
 
   // Process newest first so canonical (clean) county names win.
@@ -180,10 +207,18 @@ async function main() {
 
   const countyList = [...counties.values()].sort((a, b) => a.name.localeCompare(b.name));
 
-  // Sanity: every county should have all four cycles.
+  // Hard invariants: downstream (the swing join, the validator, the table)
+  // assumes Texas's 254 counties each carry all four cycles. A source that
+  // breaks this must fail the build, not silently ship a half-populated file.
+  if (countyList.length !== 254) {
+    throw new Error(`expected 254 Texas counties, got ${countyList.length}`);
+  }
   const incomplete = countyList.filter(c => YEARS.some(y => !c.years[y]));
   if (incomplete.length) {
-    console.warn(`  ! ${incomplete.length} counties missing a cycle, e.g. ${incomplete.slice(0, 3).map(c => c.name).join(', ')}`);
+    throw new Error(
+      `${incomplete.length} counties missing a cycle, e.g. ` +
+      incomplete.slice(0, 3).map(c => `${c.name} (${YEARS.filter(y => !c.years[y]).join(',')})`).join('; ')
+    );
   }
 
   // Statewide aggregates per cycle (summed from county returns).

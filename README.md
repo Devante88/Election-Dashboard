@@ -10,11 +10,13 @@ SVG county map. Data is fetched once by a reproducible script and committed as J
 
 - **Statewide summary** for the selected cycle — winner, electoral votes, R/D vote share, margin, total ballots.
 - **Statewide trend** — two-party vote share and margin across 2012, 2016, 2020, 2024.
-- **County choropleth map** — all 254 Texas counties shaded by margin, with hover detail.
+- **County choropleth map** — all 254 Texas counties shaded by margin. Every county is **keyboard-focusable** (Tab) and carries a screen-reader `aria-label`; detail shows on hover **and** on keyboard focus.
 - **Highlights** — closest races, largest R/D margins, highest turnout, and the biggest swing vs. the prior cycle.
 - **County results table** — sortable and searchable across every county.
 
 Switch cycles with the year picker in the header; every panel updates.
+
+Accessibility & robustness notes: the trend axis scales to the data (no cycle can overflow the plot); tooltips are built from DOM nodes, not `innerHTML`, so county names can't inject markup; and the search box is disabled until data loads, so it can't error before/after the fetch.
 
 ## The data is real
 
@@ -36,9 +38,9 @@ Statewide figures computed by this project vs. the published official canvass:
 
 Methodology notes:
 
-- Statewide figures are **summed from the 254 county returns**, so the map, table, and headline cards are always internally consistent.
+- Statewide figures are **summed from the 254 county returns**, so the map, table, and headline cards are always internally consistent. The builder **fails** rather than ship data if it can't assemble all 254 counties × 4 cycles, and the CSV parser rejects malformed rows instead of silently zero-filling.
 - `Other = total − (Republican + Democratic)`.
-- These are tabulations from public sources and may differ slightly from the final Texas Secretary of State canvass. `scripts/validate.mjs` cross-checks the computed statewide totals against the published official figures (within tolerance) on every run.
+- These are tabulations from public sources and may differ slightly from the final Texas Secretary of State canvass. `scripts/validate.mjs` cross-checks the computed statewide totals against published official figures on every run. **2012 & 2016 are independent checks** (a different source than the build input, so they can catch a regression); **2020 & 2024 share their source with the build input**, so those rows are labeled `provenance` — confirmation, not independent proof.
 - **All timestamps are U.S. Central Time (`America/Chicago`)** — Texas's time zone. The "Generated" stamp in the footer carries an explicit `CDT`/`CST` label.
 
 ## View it
