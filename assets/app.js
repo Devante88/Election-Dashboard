@@ -65,6 +65,7 @@ async function init() {
     state.data = data;
     state.geo = geo;
     state.year = data.meta.latestYear;
+    $('#search').disabled = false;
     renderStatic();
     renderYearPicker();
     renderAll();
@@ -373,6 +374,9 @@ function renderTableHeader() {
 }
 
 function renderTable() {
+  // The #search handler can fire before init() resolves (or after it fails),
+  // when state.data is still null — bail rather than deref it.
+  if (!state.data) return;
   renderTableHeader();
   const rows = countyMetricsForYear(state.year)
     .filter(r => r.name.toLowerCase().includes(state.query));
@@ -404,6 +408,8 @@ function renderTable() {
   $('#tableCaption').textContent = `${rows.length} of ${state.data.meta.countyCount} counties · ${state.year}`;
 }
 
+// Disabled until init() loads data; the input handler guards on state.data too.
+$('#search').disabled = true;
 $('#search').addEventListener('input', e => {
   state.query = e.target.value.trim().toLowerCase();
   renderTable();
