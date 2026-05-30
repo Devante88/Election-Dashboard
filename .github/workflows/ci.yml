@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # No lockfile is committed (it's gitignored), so use install, not ci.
+      - name: Install dev dependencies (jsdom, resvg)
+        run: npm install
+
+      # Data invariants + cross-check vs the official canvass + jsdom render check.
+      - name: Validate data and render
+        run: npm run validate
+
+      # Serve the site, drive the real app.js headlessly, screenshot the map.
+      - name: Smoke-test the running app
+        run: npm run smoke -- --out=screenshots
+
+      - name: Upload map screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tx-map-screenshots
+          path: screenshots/*.png
+          if-no-files-found: ignore

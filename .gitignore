@@ -1,0 +1,7 @@
+node_modules/
+scripts/.cache/
+package-lock.json
+screenshots/
+*.log
+.DS_Store
+.vscode/

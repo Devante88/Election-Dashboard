@@ -1,0 +1,17 @@
+{
+  "name": "texas-election-watch-board",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "County-level Texas presidential election results dashboard (2012-2024).",
+  "scripts": {
+    "build-data": "node scripts/build-data.mjs",
+    "validate": "node scripts/validate.mjs",
+    "serve": "python3 -m http.server 8000",
+    "smoke": "node .claude/skills/run-election-dashboard/driver.mjs"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "jsdom": "^24.1.3"
+  }
+}
