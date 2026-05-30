@@ -1,0 +1,61 @@
+{
+  "_comment": "Hand-maintained from Texas statute + term cycles (NOT fetched). No candidates or predictions — only the election date, statutory key dates, and which offices are on the ballot by term cycle. Verify specifics at the cited official sources.",
+  "maintained": "2026-05-30",
+  "next": {
+    "name": "2026 Texas General Election",
+    "kind": "Midterm general election",
+    "dateLabel": "Tuesday, November 3, 2026",
+    "countdownTargetISO": "2026-11-03T00:00:00-06:00",
+    "pollsLabel": "Polls open 7:00 AM – 7:00 PM (local, Central)",
+    "note": "Midterm cycle: no U.S. presidential race. Statewide executive offices and all U.S. & Texas House seats are on the ballot."
+  },
+  "keyDates": [
+    { "label": "Primary election", "dateLabel": "March 3, 2026", "status": "past" },
+    { "label": "Primary runoff", "dateLabel": "May 26, 2026", "status": "past" },
+    { "label": "Voter registration deadline", "dateLabel": "on/about October 5, 2026", "status": "upcoming", "note": "~30 days before Election Day — confirm at VoteTexas.gov" },
+    { "label": "Early voting (in person)", "dateLabel": "October 19 – October 30, 2026", "status": "upcoming", "note": "Statutory window (17th–4th day before); confirm county hours" },
+    { "label": "Election Day", "dateLabel": "November 3, 2026", "status": "upcoming", "note": "Polls 7 AM – 7 PM local" }
+  ],
+  "offices": [
+    {
+      "group": "Federal",
+      "items": [
+        { "office": "U.S. Senate", "scope": "1 of Texas's 2 seats (Class II)", "confidence": "by term cycle (last elected 2020)" },
+        { "office": "U.S. House of Representatives", "scope": "All 38 Texas districts", "confidence": "every 2 years" }
+      ]
+    },
+    {
+      "group": "Texas statewide executive",
+      "items": [
+        { "office": "Governor", "scope": "1 (4-year term)", "confidence": "last elected 2022" },
+        { "office": "Lieutenant Governor", "scope": "1", "confidence": "last elected 2022" },
+        { "office": "Attorney General", "scope": "1", "confidence": "last elected 2022" },
+        { "office": "Comptroller of Public Accounts", "scope": "1", "confidence": "last elected 2022" },
+        { "office": "Commissioner of the General Land Office", "scope": "1", "confidence": "last elected 2022" },
+        { "office": "Commissioner of Agriculture", "scope": "1", "confidence": "last elected 2022" },
+        { "office": "Railroad Commissioner", "scope": "1 of 3 (6-year staggered)", "confidence": "one seat per even year" }
+      ]
+    },
+    {
+      "group": "Texas Legislature",
+      "items": [
+        { "office": "Texas House of Representatives", "scope": "All 150 districts (2-year terms)", "confidence": "every 2 years" },
+        { "office": "Texas Senate", "scope": "About half of 31 seats (4-year staggered)", "confidence": "staggered — confirm exact districts" }
+      ]
+    },
+    {
+      "group": "Judicial & education",
+      "items": [
+        { "office": "Texas Supreme Court", "scope": "Several places (6-year staggered)", "confidence": "confirm exact places" },
+        { "office": "Court of Criminal Appeals", "scope": "Several places (6-year staggered)", "confidence": "confirm exact places" },
+        { "office": "Courts of Appeals / district & county courts", "scope": "Many seats", "confidence": "varies by court" },
+        { "office": "State Board of Education", "scope": "About half of 15 seats", "confidence": "staggered" }
+      ]
+    }
+  ],
+  "disclaimer": "Offices reflect Texas term cycles as of the maintained date; exact districts, places, ballot measures, and all candidates are determined by the Texas Secretary of State. This board lists no candidates and makes no predictions.",
+  "sources": [
+    { "name": "Texas Secretary of State — Elections", "url": "https://www.sos.texas.gov/elections/index.shtml" },
+    { "name": "VoteTexas.gov — dates, registration & early voting", "url": "https://www.votetexas.gov/" }
+  ]
+}

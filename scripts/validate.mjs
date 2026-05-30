@@ -132,6 +132,13 @@ async function renderCheck(data, geo) {
   ok(doc.querySelectorAll('#tableBody tr').length === 254, 'table renders 254 rows');
   ok(doc.querySelectorAll('#yearPicker .year-btn').length === 4, 'year picker has 4 buttons');
 
+  // Upcoming-election panel: visible, with a live countdown and office list.
+  const up = doc.querySelector('#upcoming');
+  ok(up && !up.hidden, 'upcoming-election panel is visible');
+  ok(doc.querySelectorAll('#upcoming .cd-unit').length === 4, 'countdown shows 4 units');
+  ok(doc.querySelectorAll('#upcoming .up-dates li').length >= 3, 'upcoming lists key dates');
+  ok(doc.querySelectorAll('#upcoming .up-office-group').length >= 3, 'upcoming lists office groups');
+
   // Accessibility: every county is keyboard-focusable and labeled for a reader.
   const paths = [...doc.querySelectorAll('#map svg path')];
   ok(paths.every(p => p.getAttribute('tabindex') === '0'), 'every county path is focusable');

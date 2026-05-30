@@ -57,6 +57,9 @@ const marginLabel = m => (m >= 0 ? 'R+' : 'D+') + Math.abs(m).toFixed(1);
 
 /* ----------------------------------------------------------------- boot */
 async function init() {
+  // The forward-looking panel loads on its own so it still shows even if the
+  // historical datasets fail to load.
+  initUpcoming();
   try {
     const [data, geo] = await Promise.all([
       fetch('data/elections.json').then(r => { if (!r.ok) throw new Error('elections.json'); return r.json(); }),
@@ -435,6 +438,117 @@ function renderTable() {
     ]));
   }
   $('#tableCaption').textContent = `${rows.length} of ${state.data.meta.countyCount} counties · ${state.year}`;
+}
+
+/* ----------------------------------------------------------- upcoming election */
+// Forward-looking panel: the next Texas general election, statutory key dates,
+// and which offices are on the ballot (by term cycle). No candidates, no
+// predictions — built from data/upcoming.json (hand-maintained statute facts).
+let countdownTimer = null;
+
+async function initUpcoming() {
+  let up;
+  try {
+    const r = await fetch('data/upcoming.json');
+    if (!r.ok) throw new Error('upcoming.json');
+    up = await r.json();
+  } catch {
+    return; // panel stays hidden; the rest of the board is unaffected
+  }
+  renderUpcoming(up);
+}
+
+function countdownParts(targetISO) {
+  const ms = new Date(targetISO).getTime() - Date.now();
+  if (!Number.isFinite(ms) || ms <= 0) return null;
+  const s = Math.floor(ms / 1000);
+  return {
+    days: Math.floor(s / 86400),
+    hours: Math.floor((s % 86400) / 3600),
+    mins: Math.floor((s % 3600) / 60),
+    secs: s % 60,
+  };
+}
+
+function renderUpcoming(up) {
+  const host = $('#upcoming');
+  if (!host || !up || !up.next) return;
+  const n = up.next;
+
+  const cdWrap = el('div', { class: 'countdown', id: 'countdown', role: 'timer', 'aria-label': 'Time until election day' });
+  const head = el('div', { class: 'up-head' }, [
+    el('div', {}, [
+      el('div', { class: 'up-eyebrow', text: 'Next election' }),
+      el('div', { class: 'up-title', text: n.name }),
+      el('div', { class: 'up-meta', text: `${n.kind} · ${n.dateLabel}` }),
+      n.pollsLabel ? el('div', { class: 'up-meta', text: n.pollsLabel }) : null,
+    ]),
+    cdWrap,
+  ]);
+
+  // Key dates
+  const dates = el('div', { class: 'up-col' }, [el('h4', { class: 'up-offices-h', text: 'Key dates' })]);
+  const dl = el('ul', { class: 'up-dates' });
+  for (const d of up.keyDates || []) {
+    const labelWrap = el('span', { class: 'd-label', text: d.label });
+    if (d.status) labelWrap.appendChild(el('span', { class: 'tag ' + d.status, text: d.status }));
+    const li = el('li', { class: d.status || '' }, [
+      labelWrap,
+      el('span', { class: 'd-when', text: d.dateLabel }),
+    ]);
+    if (d.note) li.title = d.note;
+    dl.appendChild(li);
+  }
+  dates.appendChild(dl);
+
+  // Offices on the ballot
+  const offices = el('div', { class: 'up-offices' }, [el('h4', { text: 'On the ballot (by term cycle)' })]);
+  for (const g of up.offices || []) {
+    const ul = el('ul', {});
+    for (const it of g.items || []) {
+      ul.appendChild(el('li', {}, [
+        el('span', { class: 'o-name', text: it.office }),
+        el('span', { class: 'o-scope', text: it.scope }),
+      ]));
+    }
+    offices.appendChild(el('div', { class: 'up-office-group' }, [el('h4', { text: g.group }), ul]));
+  }
+
+  const grid = el('div', { class: 'up-grid' }, [dates, offices]);
+
+  const sourceLinks = el('span', {});
+  (up.sources || []).forEach((s, i) => {
+    if (i) sourceLinks.appendChild(el('span', { text: ' · ' }));
+    sourceLinks.appendChild(el('a', { href: s.url, target: '_blank', rel: 'noopener', text: s.name }));
+  });
+  const note = el('p', { class: 'up-note' }, [
+    el('span', { text: (up.disclaimer || '') + ' Sources: ' }),
+    sourceLinks,
+  ]);
+
+  host.replaceChildren(head, grid, note);
+  host.hidden = false;
+
+  // Live countdown (updates every second; cleared/replaced on re-render).
+  const tick = () => {
+    const p = countdownParts(n.countdownTargetISO);
+    if (!p) {
+      cdWrap.replaceChildren(el('div', { class: 'cd-unit' }, [el('div', { class: 'cd-num', text: 'Today' })]));
+      if (countdownTimer) clearInterval(countdownTimer);
+      return;
+    }
+    cdWrap.replaceChildren(
+      ...[['days', 'Days'], ['hours', 'Hrs'], ['mins', 'Min'], ['secs', 'Sec']].map(([k, lab]) =>
+        el('div', { class: 'cd-unit' }, [
+          el('div', { class: 'cd-num', text: String(p[k]).padStart(2, '0') }),
+          el('div', { class: 'cd-lab', text: lab }),
+        ])
+      )
+    );
+  };
+  if (countdownTimer) clearInterval(countdownTimer);
+  tick();
+  countdownTimer = setInterval(tick, 1000);
 }
 
 // Disabled until init() loads data; the input handler guards on state.data too.
