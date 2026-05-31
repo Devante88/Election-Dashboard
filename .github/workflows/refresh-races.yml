@@ -41,6 +41,9 @@ jobs:
         # the real incumbent layer and an honest enrichment status.
         run: node scripts/enrich-races.mjs || echo "enrichment incomplete — incumbent layer still valid"
 
+      - name: Snapshot campaign finance (history over time)
+        run: node scripts/snapshot-finance.mjs
+
       - name: Validate
         run: npm run validate
 
@@ -58,5 +61,7 @@ jobs:
 
             Review before merging. No data is invented; see `meta.enrichment`
             for the live-data status of this run.
-          add-paths: data/races-2026.json
+          add-paths: |
+            data/races-2026.json
+            data/finance-history.json
           delete-branch: true

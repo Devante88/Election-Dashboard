@@ -137,6 +137,20 @@ async function racesCheck() {
     'no candidates present unless live enrichment ran (no fabricated names)');
   ok(races.senate.every(s => s.incumbent && s.incumbent.fec_id),
     'Senate incumbent carries a real FEC id');
+
+  // Finance history (optional): structurally sound, chronological, no invented
+  // totals (a snapshot with money must be flagged hasData).
+  try {
+    const hist = JSON.parse(await readFile(path.join(ROOT, 'data/finance-history.json')));
+    const snaps = hist.snapshots || [];
+    ok(Array.isArray(snaps) && snaps.length >= 1, `finance history has snapshots (${snaps.length})`);
+    const dates = snaps.map(s => s.date);
+    ok(dates.every((d, i) => i === 0 || d >= dates[i - 1]), 'finance snapshots are chronological');
+    ok(snaps.every(s => s.totals.receipts === 0 ? true : s.hasData === true),
+      'no finance totals without hasData (nothing invented)');
+  } catch {
+    console.log('  skip  data/finance-history.json not present yet (run `npm run snapshot-finance`)');
+  }
 }
 
 async function renderCheck(data, geo) {
@@ -148,13 +162,23 @@ async function renderCheck(data, geo) {
   const html = await readFile(path.join(ROOT, 'index.html'), 'utf8');
   const appSrc = await readFile(path.join(ROOT, 'assets/app.js'), 'utf8');
   const upcoming = JSON.parse(await readFile(path.join(ROOT, 'data/upcoming.json'), 'utf8'));
+  const readOpt = async f => { try { return JSON.parse(await readFile(path.join(ROOT, f))); } catch { return null; } };
+  const races = await readOpt('data/races-2026.json');
+  const finance = await readOpt('data/finance-history.json');
 
   const dom = new JSDOM(html, { runScripts: 'outside-only', pretendToBeVisual: true });
   const { window } = dom;
-  window.fetch = async url => ({
-    ok: true,
-    json: async () => (url.includes('upcoming') ? upcoming : url.includes('geo') ? geo : data),
-  });
+  window.fetch = async url => {
+    const ok = !(url.includes('races-2026') && !races) && !(url.includes('finance-history') && !finance);
+    return {
+      ok,
+      json: async () =>
+        url.includes('finance-history') ? finance :
+        url.includes('races-2026') ? races :
+        url.includes('upcoming') ? upcoming :
+        url.includes('geo') ? geo : data,
+    };
+  };
   window.Element.prototype.getBoundingClientRect = () => ({ left: 0, top: 0, width: 800, height: 700 });
 
   window.eval(appSrc);
@@ -202,6 +226,13 @@ async function renderCheck(data, geo) {
   turnoutBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await new Promise(r => setTimeout(r, 20));
   ok(doc.querySelectorAll('#map svg path').length === 254, 'map still has 254 paths after metric switch');
+
+  // 2026 races panel renders (now that the stub serves the real races file).
+  if (races) {
+    ok(doc.querySelector('#races2026') && !doc.querySelector('#races2026').hidden, 'races panel visible');
+    ok(doc.querySelectorAll('#races2026 .race-card').length === 38, 'races panel shows 38 House districts');
+    ok(!!doc.querySelector('#races2026 .finance'), 'campaign-finance section renders');
+  }
 
   await axeAudit(window);
 }

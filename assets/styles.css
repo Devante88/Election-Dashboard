@@ -328,6 +328,23 @@ body {
 .sl-office { color: var(--text); }
 .sl-scope { color: var(--muted); font-size: .82rem; text-align: right; }
 
+/* Campaign finance view */
+.finance { margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px; }
+.fin-summary { font-size: .95rem; font-weight: 700; margin: 4px 0 8px; color: var(--text); }
+.fin-board { list-style: none; margin: 8px 0 0; padding: 0; counter-reset: rank; }
+.fin-row { display: grid; grid-template-columns: auto 1fr auto auto auto; align-items: center; gap: 10px;
+  padding: 7px 0; border-top: 1px solid var(--border-soft); font-size: .9rem; }
+.fin-row:first-child { border-top: 0; }
+.fin-name { color: var(--text); font-weight: 600; }
+.fin-office { color: var(--muted); font-size: .8rem; }
+.fin-amt { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
+.fin-coh { color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+.fin-trend { width: 100%; height: auto; margin-top: 8px; }
+@media (max-width: 540px) {
+  .fin-row { grid-template-columns: auto 1fr auto; }
+  .fin-office, .fin-coh { display: none; }
+}
+
 /* ---------- responsive ---------- */
 @media (max-width: 900px) {
   .cards { grid-template-columns: repeat(2, 1fr); }

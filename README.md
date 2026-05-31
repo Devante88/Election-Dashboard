@@ -107,6 +107,19 @@ commissioners, Railroad Commissioner, the Legislature, and judicial/SBOE seats t
 ballot **by Texas term cycle**. Those rows are office facts only — incumbents and candidates stay
 `null` until a verified source (FEC state filings, Civic, Ballotpedia, or the TX SoS) is connected.
 
+### Tracking campaign finance over time
+
+```bash
+node scripts/snapshot-finance.mjs   # append today's dated finance totals
+```
+
+After each enrichment, this appends a dated snapshot (per-party receipts, cash-on-hand, top
+fundraisers) to `data/finance-history.json` — so the dashboard's **Campaign finance** panel shows a
+fundraising leaderboard, an R-vs-D money split, and a **trend line** once two or more snapshots exist.
+It's idempotent per day and **empty-safe**: with no FEC data it records a zeroed `hasData:false`
+entry and invents nothing. The `refresh-races` Action runs build → enrich → snapshot on a schedule,
+so finance "keeps updating" automatically once `FEC_API_KEY` is set.
+
 > **Network note.** Some managed/sandboxed environments allow only GitHub egress, so the FEC/Civic/
 > Census/SoS hosts return 403 there. That is an environment **network policy**, not a bug — run the
 > enrichment where the internet is open: locally, or via the included GitHub Action

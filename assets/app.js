@@ -722,7 +722,7 @@ function renderUpcoming(up) {
 // come from FEC only when enrichment has run, so the UI degrades gracefully:
 // every race has a candidates[] hook that may be empty now and full later.
 // Built entirely with el() (never innerHTML on data) for XSS-safety.
-const racesState = { data: null, filter: 'all' };
+const racesState = { data: null, finance: null, filter: 'all' };
 
 // Party metadata: class suffix for the pill, the short letter shown as TEXT
 // (so the pill never relies on color alone), and a long name for aria-labels.
@@ -768,6 +768,11 @@ async function initRaces() {
   // render garbage or throw — the panel simply stays hidden.
   if (!data || !data.meta || !data.meta.counts || !Array.isArray(data.senate) || !Array.isArray(data.house)) return;
   racesState.data = data;
+  // Finance history is optional — load it best-effort for the trend.
+  try {
+    const fr = await fetch('data/finance-history.json');
+    if (fr.ok) racesState.finance = await fr.json();
+  } catch { /* no history yet */ }
   renderRaces();
 }
 
@@ -823,6 +828,10 @@ function renderRaces() {
   // null until enriched). Grouped, read-only — no invented names.
   if (slN) children.push(renderStateLocal(data.stateLocal));
 
+  // Campaign finance: leaderboard + R-vs-D + trend. Empty-safe (shows a
+  // "connect FEC" note until real finance exists).
+  children.push(renderFinance(data, racesState.finance));
+
   host.replaceChildren(...children);
   host.hidden = false;
   renderHouseGrid(); // fills #racesGrid based on racesState.filter
@@ -852,6 +861,98 @@ function renderStateLocal(rows) {
   }
   wrap.appendChild(el('p', { class: 'races-note', text: 'Offices reflect Texas term cycles; incumbents and candidates load from FEC / Civic / Ballotpedia / TX SoS when connected. No names are shown until verified.' }));
   return wrap;
+}
+
+/* ----------------------------------------------------------- campaign finance */
+const usd = n => {
+  const v = Number(n) || 0;
+  if (v >= 1e6) return '$' + (v / 1e6).toFixed(1) + 'M';
+  if (v >= 1e3) return '$' + Math.round(v / 1e3) + 'K';
+  return '$' + v.toLocaleString('en-US');
+};
+
+// Finance view: pulls current finance from every race's candidates[], plus the
+// dated history file for a trend. Renders empty-safe — until FEC data exists it
+// shows a clear "connect FEC" note, never invented numbers.
+function renderFinance(data, history) {
+  const cands = [...data.senate, ...data.house, ...(data.stateLocal || [])]
+    .flatMap(r => (r.candidates || []).map(c => ({ ...c, office: r.office, district: r.district })));
+  const funded = cands.filter(c => c.finance && typeof c.finance.receipts === 'number');
+
+  const wrap = el('div', { class: 'finance' }, [
+    el('h3', { class: 'races-h', text: 'Campaign finance' }),
+  ]);
+
+  if (!funded.length) {
+    wrap.appendChild(el('p', { class: 'cand-empty',
+      text: 'No FEC finance yet. Add an FEC_API_KEY repository secret (or run scripts/enrich-races.mjs with a key) and this fills with real receipts, cash-on-hand, and a fundraising leaderboard — ranked, with an R-vs-D total and a trend over time.' }));
+    return wrap;
+  }
+
+  // R-vs-D money bar.
+  const byParty = {};
+  for (const c of funded) { byParty[c.party] = (byParty[c.party] || 0) + (c.finance.receipts || 0); }
+  const total = Object.values(byParty).reduce((a, b) => a + b, 0) || 1;
+  const order = ['R', 'D'].concat(Object.keys(byParty).filter(p => !'RD'.includes(p)));
+  const bar = el('div', { class: 'balance-bar', role: 'img',
+    'aria-label': 'Total receipts by party: ' + order.map(p => `${p} ${usd(byParty[p] || 0)}`).join(', ') });
+  for (const p of order) {
+    if (!byParty[p]) continue;
+    const seg = el('div', { class: 'balance-seg ' + (p === 'R' ? 'r' : p === 'D' ? 'd' : 'open') });
+    seg.style.width = (100 * byParty[p] / total).toFixed(1) + '%';
+    bar.appendChild(seg);
+  }
+  const legend = el('div', { class: 'balance-legend' },
+    order.filter(p => byParty[p]).map(p => el('span', { class: 'balance-key' }, [
+      el('span', { class: 'balance-dot ' + (p === 'R' ? 'r' : p === 'D' ? 'd' : 'open') }),
+      el('span', { text: `${p}: ${usd(byParty[p])} raised` }),
+    ])));
+  wrap.append(
+    el('div', { class: 'fin-summary' }, [
+      el('span', { text: `${usd(total)} raised across ${funded.length} candidates` }),
+    ]), bar, legend);
+
+  // Leaderboard: top fundraisers.
+  const top = funded.slice().sort((a, b) => (b.finance.receipts || 0) - (a.finance.receipts || 0)).slice(0, 8);
+  const list = el('ol', { class: 'fin-board' });
+  for (const c of top) {
+    list.appendChild(el('li', { class: 'fin-row' }, [
+      partyPill(c.party),
+      el('span', { class: 'fin-name', text: c.name }),
+      el('span', { class: 'fin-office', text: c.office === 'U.S. House' ? `TX-${c.district}` : c.office }),
+      el('span', { class: 'fin-amt', text: usd(c.finance.receipts), title: 'Total receipts' }),
+      el('span', { class: 'fin-coh', text: usd(c.finance.cashOnHand) + ' COH', title: 'Cash on hand' }),
+    ]));
+  }
+  wrap.append(el('h4', { class: 'sl-group-h', text: 'Top fundraisers' }), list);
+
+  // Trend over time (needs ≥2 dated snapshots with data).
+  const snaps = ((history && history.snapshots) || []).filter(s => s.hasData);
+  if (snaps.length >= 2) {
+    wrap.append(el('h4', { class: 'sl-group-h', text: 'Total raised over time' }), financeTrend(snaps));
+  } else if (history) {
+    wrap.appendChild(el('p', { class: 'races-note',
+      text: 'Trend appears once at least two dated snapshots exist — the scheduled refresh records one per run.' }));
+  }
+  return wrap;
+}
+
+function financeTrend(snaps) {
+  const W = 520, H = 120, padL = 48, padR = 12, padT = 12, padB = 22;
+  const max = Math.max(...snaps.map(s => s.totals.receipts)) || 1;
+  const x = i => padL + (snaps.length === 1 ? 0 : i * (W - padL - padR) / (snaps.length - 1));
+  const y = v => padT + (H - padT - padB) * (1 - v / max);
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, class: 'fin-trend', role: 'img',
+    'aria-label': 'Total receipts over time' });
+  svg.appendChild(svgEl('line', { class: 'axis-line', x1: padL, y1: y(0), x2: W - padR, y2: y(0) }));
+  let d = '';
+  snaps.forEach((s, i) => { d += (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(s.totals.receipts).toFixed(1); });
+  svg.appendChild(svgEl('path', { class: 'spark-line', d, fill: 'none' }));
+  snaps.forEach((s, i) => svg.appendChild(svgEl('circle', { cx: x(i), cy: y(s.totals.receipts), r: 3, fill: 'var(--accent)' })));
+  svg.appendChild(Object.assign(svgEl('text', { class: 'axis-text', x: padL, y: H - 6 }), { textContent: snaps[0].date }));
+  svg.appendChild(Object.assign(svgEl('text', { class: 'axis-text', x: W - padR, y: H - 6, 'text-anchor': 'end' }), { textContent: snaps.at(-1).date }));
+  svg.appendChild(Object.assign(svgEl('text', { class: 'axis-text', x: padL - 6, y: y(max) + 4, 'text-anchor': 'end' }), { textContent: usd(max) }));
+  return svg;
 }
 
 function renderSenateCard(race) {

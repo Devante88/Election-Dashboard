@@ -10,7 +10,8 @@
     "serve": "python3 -m http.server 8000",
     "smoke": "node .claude/skills/run-election-dashboard/driver.mjs",
     "build-races": "node scripts/build-races.mjs",
-    "enrich-races": "node scripts/enrich-races.mjs"
+    "enrich-races": "node scripts/enrich-races.mjs",
+    "snapshot-finance": "node scripts/snapshot-finance.mjs"
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
