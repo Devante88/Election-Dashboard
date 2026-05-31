@@ -117,28 +117,57 @@ async function main() {
     m[k] = (m[k] || 0) + 1; return m;
   }, {});
 
+  // State & local offices on the 2026 ballot, by Texas term cycle (deterministic
+  // facts). Incumbents are intentionally null: this sandbox has no reachable,
+  // verifiable source for statewide officeholders, and the project rule is no
+  // invented names. Each carries a candidates[] hook for FEC-state/Ballotpedia/
+  // TX SoS enrichment on an open network.
+  const STATE_LOCAL = [
+    { office: 'Governor', group: 'Statewide executive', seats: 1, note: 'last elected 2022' },
+    { office: 'Lieutenant Governor', group: 'Statewide executive', seats: 1, note: 'last elected 2022' },
+    { office: 'Attorney General', group: 'Statewide executive', seats: 1, note: 'last elected 2022' },
+    { office: 'Comptroller of Public Accounts', group: 'Statewide executive', seats: 1, note: 'last elected 2022' },
+    { office: 'Commissioner of the General Land Office', group: 'Statewide executive', seats: 1, note: 'last elected 2022' },
+    { office: 'Commissioner of Agriculture', group: 'Statewide executive', seats: 1, note: 'last elected 2022' },
+    { office: 'Railroad Commissioner', group: 'Statewide executive', seats: 1, note: '1 of 3 (6-yr staggered)' },
+    { office: 'Texas House of Representatives', group: 'Legislature', seats: 150, note: 'all 150 districts, 2-yr terms' },
+    { office: 'Texas Senate', group: 'Legislature', seats: null, note: 'about half of 31 (4-yr staggered)' },
+    { office: 'Texas Supreme Court', group: 'Judicial & education', seats: null, note: 'several places (6-yr staggered)' },
+    { office: 'Court of Criminal Appeals', group: 'Judicial & education', seats: null, note: 'several places (6-yr staggered)' },
+    { office: 'State Board of Education', group: 'Judicial & education', seats: null, note: 'about half of 15' },
+  ].map(o => emptyRace({
+    office: o.office, group: o.group, seats: o.seats, scopeNote: o.note,
+    incumbent: null, scope: 'state',
+  }));
+
   const out = {
     meta: {
-      title: '2026 Texas federal races',
+      title: '2026 Texas races',
       electionYear: ELECTION_YEAR,
       generated: new Date().toLocaleString('en-US', {
         timeZone: 'America/Chicago', year: 'numeric', month: 'short', day: 'numeric',
         hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
       }),
-      counts: { senate: senateUp.length, house: house.length, houseByParty: byParty, vacancies },
+      counts: {
+        senate: senateUp.length, house: house.length, houseByParty: byParty, vacancies,
+        stateLocal: STATE_LOCAL.length,
+      },
       dataNote:
-        'Incumbents/parties/districts are FACT from congress-legislators. Declared 2026 candidates, ' +
-        'polling, and finance are NOT included here — populate candidates[] from the FEC, Google Civic, ' +
-        'or Ballotpedia APIs (each race has a candidates[] hook). No names are invented.',
+        'Federal incumbents/parties/districts are FACT from congress-legislators. State & local rows ' +
+        'are the offices on the ballot by Texas term cycle (fact), with incumbents/candidates left null — ' +
+        'no statewide officeholder source is reachable here, and no names are invented. Populate ' +
+        'candidates[] from the FEC, Google Civic, Ballotpedia, or TX SoS on an open network.',
       sources: [
         { name: 'unitedstates/congress-legislators', url: 'https://github.com/unitedstates/congress-legislators',
           note: 'Current U.S. Senate & House members (name, party, district, FEC id).' },
         { name: 'FEC — candidate filings (connect for challengers/finance)', url: 'https://api.open.fec.gov/developers/' },
+        { name: 'Google Civic Information API (who is on the ballot)', url: 'https://developers.google.com/civic-information' },
         { name: 'Texas Secretary of State', url: 'https://www.sos.texas.gov/elections/index.shtml' },
       ],
     },
     senate: senateUp,
     house,
+    stateLocal: STATE_LOCAL,
   };
 
   await mkdir(path.join(ROOT, 'data'), { recursive: true });

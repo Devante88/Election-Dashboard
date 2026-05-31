@@ -70,6 +70,55 @@ async function fecCandidates({ office, district }) {
   return out;
 }
 
+// "LAST, First" (FEC) vs "First Last" (Civic) -> a comparable key.
+function nameKey(n) {
+  let s = String(n || '').toLowerCase().replace(/[.,]/g, ' ');
+  if (s.includes(',')) { const [a, b] = s.split(','); s = `${b} ${a}`; }
+  const parts = s.split(/\s+/).filter(Boolean).filter(w => !/^(jr|sr|ii|iii|iv|mr|mrs|ms|dr)$/.test(w));
+  return parts.length ? `${parts[0]} ${parts[parts.length - 1]}` : s.trim();
+}
+
+const PARTY_FROM_CIVIC = p => {
+  const s = String(p || '').toLowerCase();
+  if (s.includes('republican')) return 'R';
+  if (s.includes('democrat')) return 'D';
+  if (s.includes('libertarian')) return 'L';
+  if (s.includes('green')) return 'G';
+  return s ? 'I' : '?';
+};
+
+// Google Civic: declared candidates per office for a Texas address. Returns a
+// Map office-key -> [{name, party}], or null if unavailable. Complements FEC.
+async function civicByOffice() {
+  if (!CIVIC_KEY) return null;
+  const url = `https://www.googleapis.com/civicinfo/v2/voterinfo?key=${CIVIC_KEY}` +
+    `&address=${encodeURIComponent('Texas')}&electionId=${ELECTION_YEAR}&returnAllAvailableData=true`;
+  let data;
+  try { data = await getJSON(url, 'Google Civic'); }
+  catch (e) { console.warn(`  ! Google Civic unavailable (${e.message}); FEC-only`); return null; }
+  const map = new Map();
+  for (const c of data.contests || []) {
+    if (!/senate|representative|house/i.test(c.office || '')) continue;
+    const dist = (c.district && /\d+/.test(c.district.name || '')) ? Number((c.district.name.match(/\d+/) || [])[0]) : null;
+    const key = /senate/i.test(c.office) ? 'sen' : `rep:${dist}`;
+    map.set(key, (c.candidates || []).map(x => ({ name: x.name, party: PARTY_FROM_CIVIC(x.party) })));
+  }
+  return map;
+}
+
+// Fold Civic-only candidates into an FEC list without duplicating by name.
+function mergeCivic(fecList, civicList) {
+  if (!civicList || !civicList.length) return fecList;
+  const seen = new Set(fecList.map(c => nameKey(c.name)));
+  const merged = [...fecList];
+  for (const c of civicList) {
+    if (seen.has(nameKey(c.name))) continue;
+    merged.push({ name: c.name, party: c.party, status: null, fec_id: null, finance: null, source: 'civic' });
+    seen.add(nameKey(c.name));
+  }
+  return merged;
+}
+
 async function main() {
   const races = JSON.parse(await readFile(FILE, 'utf8'));
 
@@ -92,11 +141,19 @@ async function main() {
     process.exit(1);
   }
 
+  // Optional complementary source: Google Civic (who's on the ballot).
+  const civic = await civicByOffice();
+  if (civic) console.log('  Google Civic: merged declared candidates by office');
+
   let filled = 0;
   for (const r of [...races.senate, ...races.house]) {
     try {
-      r.candidates = await fecCandidates(r);
-      r.candidatesSource = `FEC OpenFEC, cycle ${ELECTION_YEAR}`;
+      const fec = await fecCandidates(r);
+      const key = r.office === 'U.S. Senate' ? 'sen' : `rep:${r.district}`;
+      r.candidates = mergeCivic(fec, civic && civic.get(key));
+      const srcs = ['FEC OpenFEC'];
+      if (civic && (civic.get(key) || []).length) srcs.push('Google Civic');
+      r.candidatesSource = `${srcs.join(' + ')}, cycle ${ELECTION_YEAR}`;
       if (r.candidates.length) filled++;
       process.stdout.write(`  ${r.office} ${r.district ?? r.seat}: ${r.candidates.length} candidates\n`);
     } catch (e) {
@@ -105,12 +162,13 @@ async function main() {
   }
 
   races.meta.enrichment = {
-    attempted: true, ok: true, source: 'FEC OpenFEC', cycle: ELECTION_YEAR,
+    attempted: true, ok: true,
+    source: civic ? 'FEC OpenFEC + Google Civic' : 'FEC OpenFEC', cycle: ELECTION_YEAR,
     racesWithCandidates: filled, when: new Date().toISOString(),
-    civic: CIVIC_KEY ? 'key present' : 'CIVIC_API_KEY not set (skipped)',
+    civic: CIVIC_KEY ? (civic ? 'merged' : 'key present but unavailable') : 'CIVIC_API_KEY not set (skipped)',
   };
   await writeFile(FILE, JSON.stringify(races));
-  console.log(`\nEnriched ${filled} races with real FEC candidate/finance data.`);
+  console.log(`\nEnriched ${filled} races with real candidate/finance data.`);
 }
 
 main().catch(err => { console.error(err); process.exit(1); });

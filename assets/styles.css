@@ -318,6 +318,16 @@ body {
 .district-candidates { margin-top: 10px; border-top: 1px solid var(--border-soft); padding-top: 8px; }
 .district-candidates .cand-block { margin-top: 0; }
 
+/* State & local offices (scaffold; incumbents/candidates load when connected). */
+.statelocal { margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px; }
+.sl-group { margin-top: 12px; }
+.sl-group-h { margin: 0 0 6px; font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); }
+.sl-list { list-style: none; margin: 0; padding: 0; }
+.sl-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-top: 1px solid var(--border-soft); font-size: .9rem; }
+.sl-row:first-child { border-top: 0; }
+.sl-office { color: var(--text); }
+.sl-scope { color: var(--muted); font-size: .82rem; text-align: right; }
+
 /* ---------- responsive ---------- */
 @media (max-width: 900px) {
   .cards { grid-template-columns: repeat(2, 1fr); }

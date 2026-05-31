@@ -122,11 +122,19 @@ async function racesCheck() {
   ok(races.house.every(h => h.open ? h.incumbent === null : !!(h.incumbent && h.incumbent.name)),
     'every district has an incumbent or is flagged open');
 
-  // Integrity: candidates may only be present if enrichment actually ran.
+  // State & local scaffold: offices on the ballot by term cycle, no invented
+  // incumbents/candidates.
+  const sl = races.stateLocal || [];
+  ok(sl.length >= 10, `state/local offices scaffolded (got ${sl.length})`);
+  ok(sl.every(o => o.incumbent === null && Array.isArray(o.candidates)),
+    'state/local rows have null incumbent + candidates hook (nothing invented)');
+
+  // Integrity: candidates may only be present if enrichment actually ran — across
+  // every layer (federal + state/local).
   const enriched = races.meta.enrichment && races.meta.enrichment.ok === true;
-  const anyCandidates = [...races.senate, ...races.house].some(r => (r.candidates || []).length > 0);
+  const anyCandidates = [...races.senate, ...races.house, ...sl].some(r => (r.candidates || []).length > 0);
   ok(enriched || !anyCandidates,
-    'no candidates present unless FEC enrichment ran (no fabricated names)');
+    'no candidates present unless live enrichment ran (no fabricated names)');
   ok(races.senate.every(s => s.incumbent && s.incumbent.fec_id),
     'Senate incumbent carries a real FEC id');
 }

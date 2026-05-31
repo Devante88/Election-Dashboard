@@ -100,6 +100,13 @@ node scripts/enrich-races.mjs    # layer 2: declared candidates + finance (LIVE,
 FEC_API_KEY=xxxx CIVIC_API_KEY=yyyy node scripts/enrich-races.mjs
 ```
 
+`enrich-races.mjs` pulls candidates + finance from the **FEC**, and — if `CIVIC_API_KEY` is set —
+merges **Google Civic** "who's on the ballot" results by name (no duplicates). The race file also
+carries a **state & local** layer (`stateLocal`): Governor, Lt. Gov, AG, Comptroller, Land/Ag
+commissioners, Railroad Commissioner, the Legislature, and judicial/SBOE seats that are on the 2026
+ballot **by Texas term cycle**. Those rows are office facts only — incumbents and candidates stay
+`null` until a verified source (FEC state filings, Civic, Ballotpedia, or the TX SoS) is connected.
+
 > **Network note.** Some managed/sandboxed environments allow only GitHub egress, so the FEC/Civic/
 > Census/SoS hosts return 403 there. That is an environment **network policy**, not a bug — run the
 > enrichment where the internet is open: locally, or via the included GitHub Action

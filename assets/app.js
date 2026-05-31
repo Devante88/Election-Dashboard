@@ -790,11 +790,13 @@ function renderRaces() {
     `${openN} open`,
   ].join(' · ');
 
+  const slN = (data.stateLocal || []).length;
+  const subFull = slN ? `${sub} · ${slN} state & local offices` : sub;
   const head = el('div', { class: 'races-head' }, [
     el('div', {}, [
       el('div', { class: 'races-eyebrow', text: 'On the ballot' }),
-      el('h2', { class: 'races-title', text: m.title ? m.title.replace(/^2026 /, '2026 Texas Federal Races') : '2026 Texas Federal Races' }),
-      el('div', { class: 'races-sub', text: sub }),
+      el('h2', { class: 'races-title', text: '2026 Texas Races' }),
+      el('div', { class: 'races-sub', text: subFull }),
     ]),
   ]);
   if (m.dataNote) head.appendChild(el('p', { class: 'races-note', text: m.dataNote }));
@@ -815,9 +817,41 @@ function renderRaces() {
     filterBar,
   ]);
 
-  host.replaceChildren(head, senateWrap, el('div', { class: 'balance-block' }, [balance]), houseHead, grid);
+  const children = [head, senateWrap, el('div', { class: 'balance-block' }, [balance]), houseHead, grid];
+
+  // State & local: offices on the ballot by term cycle (incumbents/candidates
+  // null until enriched). Grouped, read-only — no invented names.
+  if (slN) children.push(renderStateLocal(data.stateLocal));
+
+  host.replaceChildren(...children);
   host.hidden = false;
   renderHouseGrid(); // fills #racesGrid based on racesState.filter
+}
+
+// State & local offices, grouped (Statewide executive / Legislature / Judicial).
+function renderStateLocal(rows) {
+  const groups = [];
+  for (const r of rows) {
+    let g = groups.find(x => x.name === r.group);
+    if (!g) { g = { name: r.group, items: [] }; groups.push(g); }
+    g.items.push(r);
+  }
+  const wrap = el('div', { class: 'statelocal' }, [
+    el('h3', { class: 'races-h', text: 'State & local offices' }),
+  ]);
+  for (const g of groups) {
+    const ul = el('ul', { class: 'sl-list' });
+    for (const r of g.items) {
+      const hasCands = (r.candidates || []).length > 0;
+      ul.appendChild(el('li', { class: 'sl-row' }, [
+        el('span', { class: 'sl-office', text: r.office }),
+        el('span', { class: 'sl-scope', text: hasCands ? `${r.candidates.length} candidates` : (r.scopeNote || '') }),
+      ]));
+    }
+    wrap.appendChild(el('div', { class: 'sl-group' }, [el('h4', { class: 'sl-group-h', text: g.name }), ul]));
+  }
+  wrap.appendChild(el('p', { class: 'races-note', text: 'Offices reflect Texas term cycles; incumbents and candidates load from FEC / Civic / Ballotpedia / TX SoS when connected. No names are shown until verified.' }));
+  return wrap;
 }
 
 function renderSenateCard(race) {
