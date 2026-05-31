@@ -10,12 +10,23 @@ const state = {
   sortKey: 'name',
   sortDir: 1,        // 1 asc, -1 desc
   query: '',
+  palette: 'rdbu',   // 'rdbu' (default) | 'orpu' (color-blind-safe)
+  mapMetric: 'margin', // 'margin' | 'turnout' | 'other'
+  county: null,      // FIPS of the county open in the detail drawer
 };
 
-const REP = [216, 57, 47];
-const DEM = [47, 111, 224];
-const NEUTRAL = [236, 233, 224];
-const MARGIN_CAP = 40; // saturate the map color scale at +/- 40 pts
+// Diverging palettes: [Dem-end, neutral, Rep-end]. "orpu" (orange↔purple) stays
+// distinguishable under red-green color-blindness, unlike the default red↔blue.
+const PALETTES = {
+  rdbu: { dem: [47, 111, 224], neutral: [236, 233, 224], rep: [216, 57, 47], demName: 'Blue', repName: 'Red' },
+  orpu: { dem: [120, 70, 190], neutral: [238, 236, 230], rep: [224, 122, 30], demName: 'Purple', repName: 'Orange' },
+};
+const MARGIN_CAP = 40; // saturate the margin color scale at +/- 40 pts
+// Sequential ramp (low→high) for single-value metrics like turnout.
+const SEQ_LO = [25, 33, 52], SEQ_HI = [231, 181, 60];
+
+const lerp = (a, b, t) => a.map((n, i) => Math.round(n + (b[i] - n) * t));
+const rgb = c => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
 
 /* ----------------------------------------------------------------- utils */
 const $ = sel => document.querySelector(sel);
@@ -47,10 +58,21 @@ function metrics(rec) {
 }
 
 function colorForMargin(m) {
+  const p = PALETTES[state.palette] || PALETTES.rdbu;
   const t = Math.min(1, Math.abs(m) / MARGIN_CAP);
-  const end = m >= 0 ? REP : DEM;
-  const c = NEUTRAL.map((n, i) => Math.round(n + (end[i] - n) * t));
-  return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+  return rgb(lerp(p.neutral, m >= 0 ? p.rep : p.dem, t));
+}
+
+// Fill for the active map metric. `ctx` carries per-cycle min/max for scaling.
+function colorForMetric(m, ctx) {
+  if (state.mapMetric === 'margin') return colorForMargin(m.marginPct);
+  if (state.mapMetric === 'turnout') {
+    const span = ctx.maxTurnout - ctx.minTurnout || 1;
+    return rgb(lerp(SEQ_LO, SEQ_HI, (m.total - ctx.minTurnout) / span));
+  }
+  // other-party share
+  const span = ctx.maxOther || 1;
+  return rgb(lerp(SEQ_LO, SEQ_HI, Math.min(1, m.otherPct / span)));
 }
 
 const marginLabel = m => (m >= 0 ? 'R+' : 'D+') + Math.abs(m).toFixed(1);
@@ -69,9 +91,20 @@ async function init() {
     state.geo = geo;
     state.year = data.meta.latestYear;
     $('#search').disabled = false;
+    const openFips = applyHash();          // restore view from URL (#5)
     renderStatic();
     renderYearPicker();
+    renderControls();
     renderAll();
+    if (openFips) openCounty(openFips);    // map exists now, so the drawer can anchor
+    window.addEventListener('hashchange', () => {
+      // External hash changes (back/forward) — re-apply without feedback loop.
+      applyingHash = true;
+      const f = applyHash();
+      renderYearPicker(); renderControls(); renderAll();
+      f ? openCounty(f) : closeCounty();
+      applyingHash = false;
+    });
   } catch (err) {
     const box = $('#loadError');
     box.hidden = false;
@@ -103,7 +136,7 @@ function renderYearPicker() {
       'aria-selected': y === state.year ? 'true' : 'false',
       text: String(y),
     });
-    b.addEventListener('click', () => { state.year = y; renderYearPicker(); renderAll(); });
+    b.addEventListener('click', () => { state.year = y; syncHash(); renderYearPicker(); renderAll(); });
     box.appendChild(b);
   }
 }
@@ -234,19 +267,27 @@ function renderMap() {
     const rec = c.years[state.year];
     if (rec) byFips.set(c.fips, { name: c.name, m: metrics(rec) });
   }
+  // Per-cycle scaling context for the sequential (turnout/other) metrics.
+  const all = [...byFips.values()].map(v => v.m);
+  const ctx = {
+    minTurnout: Math.min(...all.map(m => m.total)),
+    maxTurnout: Math.max(...all.map(m => m.total)),
+    maxOther: Math.max(5, ...all.map(m => m.otherPct)),
+  };
 
   const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'xMidYMid meet' });
   for (const county of state.geo.counties) {
     const info = byFips.get(county.fips);
-    const fill = info ? colorForMargin(info.m.marginPct) : '#2a3550';
+    const fill = info ? colorForMetric(info.m, ctx) : '#2a3550';
     // Keyboard- and screen-reader-accessible: focusable, with a full label.
     const label = info
       ? `${info.name} County: ${marginLabel(info.m.marginPct)}, ` +
         `${fmt(info.m.gop)} Republican, ${fmt(info.m.dem)} Democratic, ${fmt(info.m.total)} total`
       : `${county.name} County: no data`;
     svg.appendChild(svgEl('path', {
-      class: 'county', d: pathFor(county, project), fill,
-      'data-fips': county.fips, tabindex: '0', role: 'img', 'aria-label': label,
+      class: 'county' + (county.fips === state.county ? ' selected' : ''),
+      d: pathFor(county, project), fill,
+      'data-fips': county.fips, tabindex: '0', role: 'button', 'aria-label': label,
     }));
   }
 
@@ -296,15 +337,45 @@ function renderMap() {
     showTip(info, b.left + b.width / 2, b.top + b.height / 2);
   });
   svg.addEventListener('focusout', hideTip);
+  // Touch (#8): tap a county to pin its tooltip and open the detail drawer.
+  svg.addEventListener('touchstart', ev => {
+    const path = ev.target.closest('path[data-fips]');
+    const info = infoFor(path);
+    if (!info) return;
+    ev.preventDefault();
+    const b = path.getBoundingClientRect();
+    showTip(info, b.left + b.width / 2, b.top + b.height / 2);
+    openCounty(path.getAttribute('data-fips'));
+  }, { passive: false });
+  // Click / Enter / Space: open the per-county detail drawer (#4).
+  const activate = node => { const f = node && node.getAttribute('data-fips'); if (byFips.has(f)) openCounty(f); };
+  svg.addEventListener('click', ev => activate(ev.target.closest('path[data-fips]')));
+  svg.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); activate(ev.target.closest('path[data-fips]')); }
+  });
 
+  renderMapLegend(ctx);
+  const titles = { margin: 'county margin', turnout: 'county turnout', other: 'third-party share' };
+  $('#mapTitle').textContent = `${state.year} ${titles[state.mapMetric]}`;
+}
+
+function renderMapLegend(ctx) {
   const legend = $('#mapLegend');
   legend.innerHTML = '';
-  const grad = `linear-gradient(to right, ${colorForMargin(-40)}, ${colorForMargin(-10)}, ${colorForMargin(0)}, ${colorForMargin(10)}, ${colorForMargin(40)})`;
-  legend.appendChild(el('span', { text: 'D+40' }));
-  legend.appendChild(el('span', { class: 'bar', style: `background:${grad}` }));
-  legend.appendChild(el('span', { text: 'R+40' }));
-
-  $('#mapTitle').textContent = `${state.year} county margin`;
+  if (state.mapMetric === 'margin') {
+    const grad = `linear-gradient(to right, ${colorForMargin(-40)}, ${colorForMargin(0)}, ${colorForMargin(40)})`;
+    const p = PALETTES[state.palette] || PALETTES.rdbu;
+    legend.appendChild(el('span', { text: `${p.demName.includes('Purple') ? 'D' : 'D'}+40` }));
+    legend.appendChild(el('span', { class: 'bar', style: `background:${grad}` }));
+    legend.appendChild(el('span', { text: 'R+40' }));
+  } else {
+    const grad = `linear-gradient(to right, ${rgb(SEQ_LO)}, ${rgb(SEQ_HI)})`;
+    const lo = state.mapMetric === 'turnout' ? fmt(ctx.minTurnout) : '0%';
+    const hi = state.mapMetric === 'turnout' ? fmt(ctx.maxTurnout) : pct(ctx.maxOther);
+    legend.appendChild(el('span', { text: lo }));
+    legend.appendChild(el('span', { class: 'bar', style: `background:${grad}` }));
+    legend.appendChild(el('span', { text: hi }));
+  }
 }
 
 /* ----------------------------------------------------------------- highlights */
@@ -399,6 +470,7 @@ function renderTableHeader() {
     th.addEventListener('click', () => {
       if (state.sortKey === col.key) state.sortDir *= -1;
       else { state.sortKey = col.key; state.sortDir = col.key === 'name' ? 1 : -1; }
+      syncHash();
       renderTable();
     });
     tr.appendChild(th);
@@ -425,7 +497,7 @@ function renderTable() {
   for (const r of rows) {
     const winCls = r.winner === 'R' ? 'win-r' : 'win-d';
     const marCls = r.marginPct >= 0 ? 'win-r' : 'win-d';
-    body.appendChild(el('tr', {}, [
+    const tr = el('tr', { class: 'row-clickable', tabindex: '0', 'data-fips': r.fips }, [
       el('td', { text: r.name }),
       el('td', { class: winCls, text: r.winner }),
       el('td', { text: fmt(r.gop) }),
@@ -435,9 +507,101 @@ function renderTable() {
       el('td', { text: fmt(r.other) }),
       el('td', { text: fmt(r.total) }),
       el('td', { class: marCls, text: marginLabel(r.marginPct) }),
-    ]));
+    ]);
+    tr.addEventListener('click', () => openCounty(r.fips));
+    tr.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCounty(r.fips); }
+    });
+    body.appendChild(tr);
   }
   $('#tableCaption').textContent = `${rows.length} of ${state.data.meta.countyCount} counties · ${state.year}`;
+}
+
+/* ----------------------------------------------------------- county drawer (#4) */
+// Per-county detail with a 2012–2024 margin sparkline. Pure front-end — the
+// multi-cycle data is already in elections.json.
+function countyByFips(fips) {
+  return state.data.counties.find(c => c.fips === fips);
+}
+
+function openCounty(fips) {
+  const c = countyByFips(fips);
+  if (!c) return;
+  state.county = fips;
+  syncHash();
+  document.querySelectorAll('#map .county').forEach(p =>
+    p.classList.toggle('selected', p.getAttribute('data-fips') === fips));
+
+  const years = state.data.meta.years;
+  const series = years.map(y => (c.years[y] ? { year: y, ...metrics(c.years[y]) } : null)).filter(Boolean);
+  const latest = series[series.length - 1];
+
+  const body = el('div', {}, [
+    el('div', { class: 'drawer-stat-row' }, [
+      drawerStat('Margin', marginLabel(latest.marginPct), latest.winner === 'R' ? 'val-rep' : 'val-dem'),
+      drawerStat('Republican', `${fmt(latest.gop)} (${pct(latest.gopPct)})`),
+      drawerStat('Democratic', `${fmt(latest.dem)} (${pct(latest.demPct)})`),
+      drawerStat('Total', fmt(latest.total)),
+    ]),
+    el('h4', { class: 'drawer-h', text: 'Margin by cycle' }),
+    marginSparkline(series),
+    el('div', { class: 'drawer-cycles' },
+      series.map(s => el('div', { class: 'cyc' }, [
+        el('span', { class: 'cyc-yr', text: String(s.year) }),
+        el('span', { class: 'cyc-val ' + (s.marginPct >= 0 ? 'val-rep' : 'val-dem'), text: marginLabel(s.marginPct) }),
+      ]))),
+  ]);
+
+  const drawer = $('#drawer');
+  drawer.replaceChildren(
+    el('div', { class: 'drawer-head' }, [
+      el('div', {}, [
+        el('div', { class: 'drawer-eyebrow', text: 'County detail' }),
+        el('h3', { class: 'drawer-title', text: `${c.name} County` }),
+      ]),
+      (() => { const b = el('button', { class: 'drawer-close', type: 'button', 'aria-label': 'Close detail', text: '✕' });
+        b.addEventListener('click', closeCounty); return b; })(),
+    ]),
+    body,
+  );
+  drawer.hidden = false;
+  drawer.classList.add('open');
+  const bd = $('#drawer-backdrop');
+  if (bd) bd.classList.add('show');
+}
+
+function drawerStat(label, val, cls) {
+  return el('div', { class: 'drawer-stat' }, [
+    el('div', { class: 'ds-label', text: label }),
+    el('div', { class: 'ds-val ' + (cls || ''), text: val }),
+  ]);
+}
+
+function marginSparkline(series) {
+  const W = 320, H = 90, pad = 18;
+  const cap = Math.max(20, ...series.map(s => Math.abs(s.marginPct)));
+  const x = i => pad + (series.length === 1 ? (W - 2 * pad) / 2 : (i * (W - 2 * pad)) / (series.length - 1));
+  const y = m => H / 2 - (m / cap) * (H / 2 - pad);
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, class: 'sparkline', role: 'img', 'aria-label': 'Margin trend by cycle' });
+  svg.appendChild(svgEl('line', { class: 'spark-zero', x1: pad, y1: y(0), x2: W - pad, y2: y(0) }));
+  let d = '';
+  series.forEach((s, i) => { d += (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(s.marginPct).toFixed(1); });
+  svg.appendChild(svgEl('path', { class: 'spark-line', d, fill: 'none' }));
+  series.forEach((s, i) => svg.appendChild(svgEl('circle', {
+    cx: x(i), cy: y(s.marginPct), r: 4, fill: colorForMargin(s.marginPct),
+  })));
+  return svg;
+}
+
+function closeCounty() {
+  state.county = null;
+  syncHash();
+  const drawer = $('#drawer');
+  drawer.hidden = true;
+  drawer.classList.remove('open');
+  const bd = $('#drawer-backdrop');
+  if (bd) bd.classList.remove('show');
+  document.querySelectorAll('#map .county.selected').forEach(p => p.classList.remove('selected'));
 }
 
 /* ----------------------------------------------------------- upcoming election */
@@ -551,11 +715,76 @@ function renderUpcoming(up) {
   countdownTimer = setInterval(tick, 1000);
 }
 
+/* ----------------------------------------------------------- shareable state (#5) */
+// Sync year / search / sort / palette / metric / open county to location.hash so
+// views are bookmarkable and survive reload.
+let applyingHash = false;
+function syncHash() {
+  if (applyingHash) return;
+  const p = new URLSearchParams();
+  if (state.year) p.set('year', state.year);
+  if (state.query) p.set('q', state.query);
+  if (state.sortKey !== 'name' || state.sortDir !== 1) p.set('sort', `${state.sortKey}:${state.sortDir}`);
+  if (state.mapMetric !== 'margin') p.set('metric', state.mapMetric);
+  if (state.palette !== 'rdbu') p.set('palette', state.palette);
+  if (state.county) p.set('county', state.county);
+  const h = p.toString();
+  // Always update via the hash only (never reconstruct the path) so this works
+  // under file://, sub-paths (GitHub Pages), and strict URL parsers.
+  try { history.replaceState(null, '', '#' + h); }
+  catch { location.hash = h; }
+}
+
+function applyHash() {
+  const p = new URLSearchParams(location.hash.slice(1));
+  const years = state.data.meta.years;
+  const y = Number(p.get('year'));
+  if (years.includes(y)) state.year = y;
+  state.query = (p.get('q') || '').toLowerCase();
+  if (p.get('sort')) {
+    const [k, d] = p.get('sort').split(':');
+    if (COLS.some(c => c.key === k)) { state.sortKey = k; state.sortDir = Number(d) === -1 ? -1 : 1; }
+  }
+  if (['turnout', 'other'].includes(p.get('metric'))) state.mapMetric = p.get('metric');
+  if (PALETTES[p.get('palette')]) state.palette = p.get('palette');
+  const search = $('#search');
+  if (search) search.value = state.query;
+  return p.get('county'); // applied after first render so the map exists
+}
+
+/* ----------------------------------------------------------- view controls (#6,#7) */
+function renderControls() {
+  const host = $('#mapControls');
+  if (!host) return;
+  host.innerHTML = '';
+  const group = (label, current, options, onPick) => {
+    const seg = el('div', { class: 'seg', role: 'group', 'aria-label': label });
+    for (const o of options) {
+      const b = el('button', {
+        class: 'seg-btn' + (o.val === current ? ' active' : ''),
+        type: 'button', 'aria-pressed': o.val === current ? 'true' : 'false', text: o.label,
+      });
+      b.addEventListener('click', () => { onPick(o.val); });
+      seg.appendChild(b);
+    }
+    return seg;
+  };
+  host.appendChild(group('Map metric', state.mapMetric, [
+    { val: 'margin', label: 'Margin' }, { val: 'turnout', label: 'Turnout' }, { val: 'other', label: 'Other %' },
+  ], v => { state.mapMetric = v; renderControls(); renderMap(); syncHash(); }));
+  host.appendChild(group('Color palette', state.palette, [
+    { val: 'rdbu', label: 'Red / Blue' }, { val: 'orpu', label: 'Color-blind' },
+  ], v => { state.palette = v; renderControls(); renderMap(); renderTrend(); syncHash(); }));
+}
+
 // Disabled until init() loads data; the input handler guards on state.data too.
 $('#search').disabled = true;
 $('#search').addEventListener('input', e => {
   state.query = e.target.value.trim().toLowerCase();
+  syncHash();
   renderTable();
 });
+$('#drawer-backdrop')?.addEventListener('click', closeCounty);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCounty(); });
 
 init();

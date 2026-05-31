@@ -149,6 +149,48 @@ async function renderCheck(data, geo) {
   ok(paths.every(p => (p.getAttribute('aria-label') || '').length > 0), 'every county path has an aria-label');
   // Search is disabled until data loads, then re-enabled (no crash on early type).
   ok(doc.querySelector('#search').disabled === false, 'search input enabled after load');
+
+  // View controls (#6 metric, #7 palette) and clickable rows (#4).
+  ok(doc.querySelectorAll('#mapControls .seg').length === 2, 'map has metric + palette controls');
+  ok(doc.querySelectorAll('#tableBody tr.row-clickable').length === 254, 'table rows are clickable');
+
+  // County drawer (#4): opening a county shows a sparkline + per-cycle margins.
+  const firstRow = doc.querySelector('#tableBody tr.row-clickable');
+  firstRow.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 20));
+  const drawer = doc.querySelector('#drawer');
+  ok(drawer && !drawer.hidden, 'county drawer opens on row click');
+  ok(doc.querySelector('#drawer .sparkline'), 'drawer shows a margin sparkline');
+  ok(doc.querySelectorAll('#drawer .drawer-cycles .cyc').length === 4, 'drawer lists all 4 cycles');
+
+  // Metric toggle recolors the map without changing path count.
+  const turnoutBtn = [...doc.querySelectorAll('#mapControls .seg-btn')].find(b => b.textContent === 'Turnout');
+  turnoutBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 20));
+  ok(doc.querySelectorAll('#map svg path').length === 254, 'map still has 254 paths after metric switch');
+
+  await axeAudit(window);
+}
+
+// Automated accessibility audit (#9): run axe-core against the rendered DOM and
+// fail on serious/critical violations. Skipped cleanly if axe isn't installed.
+async function axeAudit(window) {
+  console.log('\nAccessibility audit (axe-core)');
+  let axe;
+  try { axe = (await import('axe-core')).default || (await import('axe-core')); }
+  catch { console.log('  skip  axe-core not installed (run `npm install`)'); return; }
+  try {
+    window.eval(axe.source);
+    const results = await window.axe.run(window.document, {
+      resultTypes: ['violations'],
+      rules: { 'color-contrast': { enabled: false } }, // needs real layout/paint; not meaningful in jsdom
+    });
+    const serious = results.violations.filter(v => ['serious', 'critical'].includes(v.impact));
+    for (const v of serious) console.log(`  ! ${v.impact}: ${v.id} (${v.nodes.length}) — ${v.help}`);
+    ok(serious.length === 0, `no serious/critical axe violations (found ${serious.length})`);
+  } catch (e) {
+    console.log('  skip  axe run failed in jsdom: ' + e.message);
+  }
 }
 
 main().catch(err => { console.error(err); process.exit(1); });

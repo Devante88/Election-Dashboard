@@ -4,7 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Texas Election Watch Board</title>
-  <meta name="description" content="County-level Texas presidential election results, 2012–2024. A self-contained data dashboard." />
+  <meta name="description" content="County-level Texas presidential election results, 2012–2024, plus a live countdown to the 2026 general election. A self-contained data dashboard." />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <!-- Open Graph / Twitter card (#10) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Texas Election Watch Board" />
+  <meta property="og:description" content="County-level Texas presidential results (2012–2024) and a live countdown to the 2026 general election." />
+  <meta property="og:image" content="assets/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Texas Election Watch Board" />
+  <meta name="twitter:description" content="County-level Texas presidential results (2012–2024) and a live countdown to the 2026 general election." />
+  <meta name="twitter:image" content="assets/og-image.png" />
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -41,10 +51,11 @@
       <div class="panel">
         <div class="panel-head">
           <h2 id="mapTitle">County map</h2>
-          <p class="muted">Margin by county — hover for detail</p>
+          <p class="muted">Tap or click a county for its 2012–2024 trend</p>
         </div>
+        <div id="mapControls" class="map-controls"></div>
         <div id="mapWrap" class="map-wrap">
-          <div id="map" class="map" role="img" aria-label="Texas county results map"></div>
+          <div id="map" class="map" role="group" aria-label="Texas county results map — interactive"></div>
           <div id="mapTooltip" class="map-tooltip" hidden></div>
         </div>
         <div id="mapLegend" class="legend" aria-hidden="true"></div>
@@ -72,6 +83,9 @@
       </div>
     </section>
   </main>
+
+  <div id="drawer-backdrop" class="drawer-backdrop"></div>
+  <aside id="drawer" class="drawer" aria-label="County detail" hidden></aside>
 
   <footer class="site-footer">
     <div class="wrap">

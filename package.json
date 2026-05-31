@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
+    "axe-core": "^4.11.4",
     "jsdom": "^24.1.3"
   }
 }

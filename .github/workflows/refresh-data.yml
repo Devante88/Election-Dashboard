@@ -1,0 +1,53 @@
+name: Refresh data
+
+# Re-fetch the public sources weekly (and on demand). Opens a PR only when the
+# committed data actually changes — never commits straight to main. (#2)
+on:
+  schedule:
+    - cron: "17 9 * * 1"   # Mondays 09:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      # Rebuild from the live sources, then verify before proposing any change.
+      - name: Rebuild data
+        run: node scripts/build-data.mjs
+
+      - name: Regenerate share image
+        run: node scripts/make-og-image.mjs
+
+      - name: Validate
+        run: npm run validate
+
+      - name: Open PR if data changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: data/auto-refresh
+          title: "Automated data refresh"
+          commit-message: "Refresh election data from public sources"
+          body: |
+            Automated weekly refresh of `data/*.json` from the public sources in
+            `scripts/build-data.mjs`. Opened only because the rebuilt data differs
+            from what's committed. `npm run validate` passed in the workflow.
+
+            Review the statewide totals before merging.
+          add-paths: |
+            data/elections.json
+            data/tx-counties-geo.json
+            assets/og-image.png
+          delete-branch: true
