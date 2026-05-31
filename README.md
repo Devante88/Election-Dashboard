@@ -126,6 +126,34 @@ so finance "keeps updating" automatically once `FEC_API_KEY` is set.
 > (`.github/workflows/refresh-races.yml`) with `FEC_API_KEY`/`CIVIC_API_KEY` stored as repo secrets.
 > The Action runs on GitHub's open network and opens a PR when the race data changes.
 
+## Go live: turn on real candidate + finance data
+
+Three steps, ~3 minutes, all in your browser. Until you do them, the dashboard shows the real
+**incumbents** with empty candidate lists and a "connect FEC" note — it never invents data.
+
+1. **Get a free FEC API key** — visit <https://api.open.fec.gov/developers/>, sign up with your
+   email, and the key is issued instantly (no approval wait).
+
+2. **Add it as a repository secret** — in GitHub:
+   **Settings → Secrets and variables → Actions → New repository secret**
+   - Name: `FEC_API_KEY` · Value: *(paste your key)* → **Add secret**
+   - *(optional)* repeat with `CIVIC_API_KEY` to also merge Google Civic "who's on the ballot" data.
+
+   > GitHub never exposes a secret's value back to any API or token — setting it is a manual,
+   > by-design step that cannot be automated. The key lives only in your repo's encrypted secrets.
+
+3. **Run the workflow** — in the **Actions** tab, choose **“Refresh 2026 races (live data)”** →
+   **Run workflow** (branch `main`). It pulls real declared candidates + campaign finance, snapshots
+   the totals, and **opens a pull request** with the enriched `data/races-2026.json` and
+   `data/finance-history.json`. Review and **merge** it — the live data then appears on the dashboard
+   (fundraising leaderboard, R-vs-D money split, and a finance trend once ≥2 snapshots exist).
+
+After that it’s automatic: the scheduled run refreshes the data and opens a PR whenever it changes.
+
+**What you'll see per race:** real filed candidates with party, incumbent/challenger status, total
+receipts and cash-on-hand — ranked by money raised. (Early in a cycle the FEC only has whoever has
+actually filed, so lists may be short. That's real, not a bug.)
+
 ## Validate
 
 ```bash
