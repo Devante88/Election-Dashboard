@@ -38,8 +38,10 @@ async function getJSON(url, label) {
 async function fecCandidates({ office, district }) {
   const params = new URLSearchParams({
     api_key: FEC_KEY, state: STATE, election_year: String(ELECTION_YEAR),
-    office: office === 'U.S. Senate' ? 'S' : 'H', sort: '-total_receipts',
-    per_page: '50', candidate_status: 'C',
+    office: office === 'U.S. Senate' ? 'S' : 'H',
+    // Sort by a field the candidates/search endpoint actually supports — sorting
+    // by total_receipts there 422s. We rank by money client-side below instead.
+    sort: 'name', per_page: '50', candidate_status: 'C',
   });
   if (office === 'U.S. House' && district != null) params.set('district', String(district).padStart(2, '0'));
   const data = await getJSON(`${FEC}/candidates/search/?${params}`, 'FEC candidates');
@@ -67,6 +69,8 @@ async function fecCandidates({ office, district }) {
       finance,
     });
   }
+  // Rank by money raised (strongest fundraiser first); unknown finance sorts last.
+  out.sort((a, b) => (b.finance?.receipts ?? -1) - (a.finance?.receipts ?? -1));
   return out;
 }
 
