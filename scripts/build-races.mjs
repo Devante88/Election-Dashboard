@@ -74,7 +74,14 @@ async function main() {
   for (const p of all) {
     const t = p.terms[p.terms.length - 1];
     if (t.state !== 'TX') continue;
-    const fec = Array.isArray(p.id.fec) ? p.id.fec[p.id.fec.length - 1] : null;
+    // FEC candidate IDs are chamber-prefixed (H… House, S… Senate, P… president).
+    // Pick the id matching this member's CURRENT chamber so a House member who
+    // once ran for Senate doesn't surface a stale Senate committee id; fall back
+    // to the most recent id only if no chamber match exists.
+    const fecIds = Array.isArray(p.id.fec) ? p.id.fec : (p.id.fec ? [p.id.fec] : []);
+    const want = t.type === 'sen' ? 'S' : t.type === 'rep' ? 'H' : null;
+    const fec = (want && [...fecIds].reverse().find(id => String(id).startsWith(want)))
+      || fecIds[fecIds.length - 1] || null;
     tx.push({
       name: p.name.official_full || `${p.name.first} ${p.name.last}`,
       type: t.type, district: t.district ?? null,

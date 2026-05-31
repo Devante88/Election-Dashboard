@@ -866,9 +866,11 @@ function renderStateLocal(rows) {
 /* ----------------------------------------------------------- campaign finance */
 const usd = n => {
   const v = Number(n) || 0;
-  if (v >= 1e6) return '$' + (v / 1e6).toFixed(1) + 'M';
-  if (v >= 1e3) return '$' + Math.round(v / 1e3) + 'K';
-  return '$' + v.toLocaleString('en-US');
+  const sign = v < 0 ? '-' : '';          // FEC net figures can be negative (refunds)
+  const a = Math.abs(v);
+  if (a >= 999500) return sign + '$' + (a / 1e6).toFixed(1) + 'M';   // round into M at the boundary
+  if (a >= 1000) return sign + '$' + Math.round(a / 1e3) + 'K';
+  return sign + '$' + Math.round(a).toLocaleString('en-US');
 };
 
 // Finance view: pulls current finance from every race's candidates[], plus the

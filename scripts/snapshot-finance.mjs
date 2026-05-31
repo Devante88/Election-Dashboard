@@ -24,6 +24,12 @@ const HIST = path.join(ROOT, 'data/finance-history.json');
 
 const sum = (arr, f) => arr.reduce((a, x) => a + (f(x) || 0), 0);
 
+// Day key in Central Time (Texas), matching the rest of the project — so an
+// evening-Central run isn't mislabeled as the next (UTC) day.
+const centralDay = d => new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit',
+}).format(d); // en-CA => YYYY-MM-DD
+
 async function main() {
   if (!existsSync(RACES)) {
     console.error('data/races-2026.json missing — run `npm run build-races` first.');
@@ -32,7 +38,10 @@ async function main() {
   const races = JSON.parse(await readFile(RACES, 'utf8'));
   const allRaces = [...(races.senate || []), ...(races.house || []), ...(races.stateLocal || [])];
   const cands = allRaces.flatMap(r => (r.candidates || []).map(c => ({ ...c, office: r.office })));
-  const withFinance = cands.filter(c => c.finance && typeof c.finance.receipts === 'number');
+  // Include a candidate if ANY finance figure is a real number (receipts OR
+  // cash-on-hand) — don't drop someone reporting cash but null receipts.
+  const numeric = v => typeof v === 'number' && Number.isFinite(v);
+  const withFinance = cands.filter(c => c.finance && (numeric(c.finance.receipts) || numeric(c.finance.cashOnHand)));
 
   // Aggregate the day's totals (by party + overall) from real FEC finance only.
   const byParty = {};
@@ -45,7 +54,7 @@ async function main() {
   }
 
   const snapshot = {
-    date: new Date().toISOString().slice(0, 10),       // UTC day key
+    date: centralDay(new Date()),                      // Central (Texas) day key
     when: new Date().toISOString(),
     hasData: withFinance.length > 0,
     source: races.meta?.enrichment?.source || null,

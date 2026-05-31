@@ -47,6 +47,21 @@ jobs:
       - name: Validate
         run: npm run validate
 
+      # Suppress no-op churn: build/enrich/snapshot always rewrite a timestamp, so
+      # without this every run would open a PR. Revert any file whose ONLY change
+      # is volatile timestamp fields, so create-pull-request sees a real diff or none.
+      - name: Drop timestamp-only changes
+        run: |
+          strip() { jq -S 'del(.meta.generated, .meta.generatedUTC, .meta.updated,
+                                .meta.enrichment.when, (.snapshots[]?.when))' "$1" 2>/dev/null; }
+          for f in data/races-2026.json data/finance-history.json; do
+            git show "HEAD:$f" > /tmp/old.json 2>/dev/null || continue
+            if diff -q <(strip /tmp/old.json) <(strip "$f") >/dev/null 2>&1; then
+              echo "No substantive change in $f — reverting timestamp-only churn."
+              git checkout -- "$f"
+            fi
+          done
+
       - name: Open PR if races data changed
         uses: peter-evans/create-pull-request@v6
         with:
