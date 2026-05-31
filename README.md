@@ -76,6 +76,36 @@ Regenerate the social-share image after a data change:
 node scripts/make-og-image.mjs   # writes assets/og-image.png
 ```
 
+## 2026 races — real data, and how to get the *live* layer
+
+`data/races-2026.json` is the forward-looking battlefield for working campaigns. It is built in two
+layers, and **no candidate, poll, or dollar figure is ever invented**:
+
+```bash
+node scripts/build-races.mjs     # layer 1: incumbents (FACT)
+node scripts/enrich-races.mjs    # layer 2: declared candidates + finance (LIVE, key-gated)
+```
+
+- **Layer 1 — incumbents (works anywhere, including offline):** current officeholder, party, district,
+  and FEC id for the 2026 ballot — the Class II U.S. Senate seat and all 38 U.S. House districts,
+  including any **vacant/open** seat — from
+  [`unitedstates/congress-legislators`](https://github.com/unitedstates/congress-legislators).
+- **Layer 2 — live candidates & campaign finance:** declared candidates with receipts / cash-on-hand
+  from the **[FEC OpenFEC API](https://api.open.fec.gov/developers/)** (and optionally Google Civic).
+  This step is **key-gated and network-gated**: with no key, or on a network that blocks the API, it
+  records *why* in `meta.enrichment` and leaves `candidates[]` empty — it never fabricates.
+
+```bash
+# get a free key at https://api.open.fec.gov/developers/
+FEC_API_KEY=xxxx CIVIC_API_KEY=yyyy node scripts/enrich-races.mjs
+```
+
+> **Network note.** Some managed/sandboxed environments allow only GitHub egress, so the FEC/Civic/
+> Census/SoS hosts return 403 there. That is an environment **network policy**, not a bug — run the
+> enrichment where the internet is open: locally, or via the included GitHub Action
+> (`.github/workflows/refresh-races.yml`) with `FEC_API_KEY`/`CIVIC_API_KEY` stored as repo secrets.
+> The Action runs on GitHub's open network and opens a PR when the race data changes.
+
 ## Validate
 
 ```bash

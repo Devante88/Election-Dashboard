@@ -99,10 +99,36 @@ async function main() {
   ok(Object.values(OFFICIAL).filter(o => o.independent).length >= 2,
     'has >=2 independent official cross-checks');
 
+  await racesCheck();
   await renderCheck(data, geo);
 
   console.log(`\n${failures === 0 ? 'ALL CHECKS PASSED' : failures + ' CHECK(S) FAILED'}`);
   process.exit(failures === 0 ? 0 : 1);
+}
+
+// 2026 races: real incumbent layer is complete, and (critically) no candidate
+// names exist unless live enrichment actually ran — guards against fabrication.
+async function racesCheck() {
+  console.log('\n2026 races (real data)');
+  let races;
+  try { races = JSON.parse(await readFile(path.join(ROOT, 'data/races-2026.json'))); }
+  catch { console.log('  skip  data/races-2026.json not present (run `npm run build-races`)'); return; }
+
+  ok(races.senate.length === 1, `exactly 1 U.S. Senate seat up (got ${races.senate.length})`);
+  ok(races.house.length === 38, `38 U.S. House districts (got ${races.house.length})`);
+  const districts = races.house.map(h => h.district).sort((a, b) => a - b);
+  const fullSet = districts.length === 38 && districts.every((d, i) => d === i + 1);
+  ok(fullSet, 'House districts are exactly 1..38');
+  ok(races.house.every(h => h.open ? h.incumbent === null : !!(h.incumbent && h.incumbent.name)),
+    'every district has an incumbent or is flagged open');
+
+  // Integrity: candidates may only be present if enrichment actually ran.
+  const enriched = races.meta.enrichment && races.meta.enrichment.ok === true;
+  const anyCandidates = [...races.senate, ...races.house].some(r => (r.candidates || []).length > 0);
+  ok(enriched || !anyCandidates,
+    'no candidates present unless FEC enrichment ran (no fabricated names)');
+  ok(races.senate.every(s => s.incumbent && s.incumbent.fec_id),
+    'Senate incumbent carries a real FEC id');
 }
 
 async function renderCheck(data, geo) {

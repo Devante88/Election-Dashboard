@@ -1,0 +1,62 @@
+name: Refresh 2026 races (live data)
+
+# Builds the REAL 2026 Texas federal race file and enriches it with live FEC
+# campaign-finance + declared candidates. Runs on GitHub's open network (NOT the
+# GitHub-only sandbox), so the FEC/Civic hosts are reachable here.
+#
+# Setup (one time): add repository secrets
+#   FEC_API_KEY    — free from https://api.open.fec.gov/developers/
+#   CIVIC_API_KEY  — optional, Google Civic Information API
+# Without FEC_API_KEY the build still produces the real incumbent layer; the
+# enrich step records why candidates[] is empty and never invents data.
+
+on:
+  schedule:
+    - cron: "23 10 * * 1,4"   # Mon & Thu, 10:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  races:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+
+      - name: Build incumbent layer (congress-legislators)
+        run: node scripts/build-races.mjs
+
+      - name: Enrich with FEC candidates + finance
+        env:
+          FEC_API_KEY: ${{ secrets.FEC_API_KEY }}
+          CIVIC_API_KEY: ${{ secrets.CIVIC_API_KEY }}
+        # Don't fail the whole job if FEC is briefly down; the file still has
+        # the real incumbent layer and an honest enrichment status.
+        run: node scripts/enrich-races.mjs || echo "enrichment incomplete — incumbent layer still valid"
+
+      - name: Validate
+        run: npm run validate
+
+      - name: Open PR if races data changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: data/races-refresh
+          title: "Automated 2026 races refresh (FEC live data)"
+          commit-message: "Refresh 2026 Texas races from congress-legislators + FEC"
+          body: |
+            Automated refresh of `data/races-2026.json`:
+            - Incumbent/district/vacancy layer from `congress-legislators` (fact).
+            - Declared candidates + campaign finance from the FEC OpenFEC API
+              (only if `FEC_API_KEY` secret is set and reachable).
+
+            Review before merging. No data is invented; see `meta.enrichment`
+            for the live-data status of this run.
+          add-paths: data/races-2026.json
+          delete-branch: true

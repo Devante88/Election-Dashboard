@@ -79,9 +79,10 @@ const marginLabel = m => (m >= 0 ? 'R+' : 'D+') + Math.abs(m).toFixed(1);
 
 /* ----------------------------------------------------------------- boot */
 async function init() {
-  // The forward-looking panel loads on its own so it still shows even if the
+  // The forward-looking panels load on their own so they still show even if the
   // historical datasets fail to load.
   initUpcoming();
+  initRaces();
   try {
     const [data, geo] = await Promise.all([
       fetch('data/elections.json').then(r => { if (!r.ok) throw new Error('elections.json'); return r.json(); }),
@@ -713,6 +714,316 @@ function renderUpcoming(up) {
   if (countdownTimer) clearInterval(countdownTimer);
   tick();
   countdownTimer = setInterval(tick, 1000);
+}
+
+/* ----------------------------------------------------------- 2026 races */
+// Client-facing panel for the 2026 Texas federal ballot. Incumbents/parties/
+// districts are FACT (from congress-legislators); declared candidates + finance
+// come from FEC only when enrichment has run, so the UI degrades gracefully:
+// every race has a candidates[] hook that may be empty now and full later.
+// Built entirely with el() (never innerHTML on data) for XSS-safety.
+const racesState = { data: null, filter: 'all' };
+
+// Party metadata: class suffix for the pill, the short letter shown as TEXT
+// (so the pill never relies on color alone), and a long name for aria-labels.
+function partyMeta(party) {
+  switch (party) {
+    case 'R': return { cls: 'r', letter: 'R', name: 'Republican' };
+    case 'D': return { cls: 'd', letter: 'D', name: 'Democratic' };
+    case 'I': return { cls: 'i', letter: 'I', name: 'Independent' };
+    default:  return { cls: 'open', letter: party || 'Open', name: party || 'Open seat' };
+  }
+}
+
+function partyPill(party) {
+  const m = partyMeta(party);
+  return el('span', { class: 'party-pill ' + m.cls, 'aria-label': m.name, text: m.letter });
+}
+
+// Last word of a name (drops a trailing "Jr."/"Sr."/"III" suffix) for compact
+// district cards. Falls back to the whole string when there's nothing to trim.
+function surname(name) {
+  if (!name) return '';
+  const parts = String(name).replace(/,/g, '').trim().split(/\s+/);
+  const suffixes = new Set(['jr', 'jr.', 'sr', 'sr.', 'ii', 'iii', 'iv', 'v']);
+  while (parts.length > 1 && suffixes.has(parts[parts.length - 1].toLowerCase())) parts.pop();
+  return parts[parts.length - 1] || name;
+}
+
+const raceIsOpen = race => race.open === true || !race.incumbent;
+
+// A race is expandable only when it actually has declared candidates to show.
+const hasCandidates = race => Array.isArray(race.candidates) && race.candidates.length > 0;
+
+async function initRaces() {
+  let data;
+  try {
+    const r = await fetch('data/races-2026.json');
+    if (!r.ok) throw new Error('races-2026.json');
+    data = await r.json();
+  } catch {
+    return; // panel stays hidden; the rest of the board is unaffected
+  }
+  // Guard the shape so a wrong-shaped payload (e.g. a stubbed fetch) can never
+  // render garbage or throw — the panel simply stays hidden.
+  if (!data || !data.meta || !data.meta.counts || !Array.isArray(data.senate) || !Array.isArray(data.house)) return;
+  racesState.data = data;
+  renderRaces();
+}
+
+function renderRaces() {
+  const host = $('#races2026');
+  const data = racesState.data;
+  if (!host || !data) return;
+  const m = data.meta;
+  const counts = m.counts || {};
+  const byParty = counts.houseByParty || {};
+
+  // Header: title, count subtitle, and the provenance note from the data so the
+  // viewer can see incumbents are fact and candidates come from FEC.
+  const senateN = counts.senate || 0;
+  const houseN = counts.house || 0;
+  const openN = byParty.Open || 0;
+  const sub = [
+    `${senateN} U.S. Senate ${senateN === 1 ? 'seat' : 'seats'}`,
+    `${houseN} U.S. House ${houseN === 1 ? 'district' : 'districts'}`,
+    `${openN} open`,
+  ].join(' · ');
+
+  const head = el('div', { class: 'races-head' }, [
+    el('div', {}, [
+      el('div', { class: 'races-eyebrow', text: 'On the ballot' }),
+      el('h2', { class: 'races-title', text: m.title ? m.title.replace(/^2026 /, '2026 Texas Federal Races') : '2026 Texas Federal Races' }),
+      el('div', { class: 'races-sub', text: sub }),
+    ]),
+  ]);
+  if (m.dataNote) head.appendChild(el('p', { class: 'races-note', text: m.dataNote }));
+
+  // Senate (prominent) — render each Senate race as a large card.
+  const senateWrap = el('div', { class: 'senate-wrap' },
+    data.senate.map(renderSenateCard));
+
+  // House party-balance bar + legend.
+  const balance = renderBalanceBar(byParty);
+
+  // House filter (segmented control) + grid (re-rendered in place on filter).
+  const filterBar = renderRaceFilter(byParty);
+  const grid = el('div', { class: 'races-grid', id: 'racesGrid', role: 'list', 'aria-label': 'U.S. House districts' });
+
+  const houseHead = el('div', { class: 'races-subhead' }, [
+    el('h3', { class: 'races-h', text: 'U.S. House districts' }),
+    filterBar,
+  ]);
+
+  host.replaceChildren(head, senateWrap, el('div', { class: 'balance-block' }, [balance]), houseHead, grid);
+  host.hidden = false;
+  renderHouseGrid(); // fills #racesGrid based on racesState.filter
+}
+
+function renderSenateCard(race) {
+  const open = raceIsOpen(race);
+  const inc = race.incumbent;
+  const party = open ? 'Open' : (inc && inc.party);
+
+  const header = el('div', { class: 'senate-head' }, [
+    el('div', {}, [
+      el('div', { class: 'senate-office', text: race.office || 'U.S. Senate' }),
+      race.seat ? el('div', { class: 'senate-seat', text: roman(race.seat) }) : null,
+    ]),
+    partyPill(party),
+  ]);
+
+  const incLine = open
+    ? el('div', { class: 'senate-incumbent open', text: 'Open seat — no incumbent' })
+    : el('div', { class: 'senate-incumbent' }, [
+        el('span', { class: 'inc-label', text: 'Incumbent' }),
+        el('span', { class: 'inc-name', text: inc.name }),
+      ]);
+
+  const card = el('div', { class: 'senate-card' + (open ? ' open' : ''), 'data-office': race.office || 'senate' },
+    [header, incLine]);
+
+  // Candidates block: real FEC rows when present, otherwise an honest muted note.
+  card.appendChild(renderCandidateBlock(race));
+  return card;
+}
+
+// Builds the candidate area for any race. When candidates[] is empty (now) it
+// shows a muted "load from FEC" line; when populated (later) it lists each
+// declared candidate with party + finance. Never errors on either shape.
+function renderCandidateBlock(race) {
+  if (!hasCandidates(race)) {
+    return el('div', { class: 'cand-empty', text: 'Declared candidates load from FEC when connected.' });
+  }
+  const list = el('ul', { class: 'cand-list' });
+  for (const c of race.candidates) {
+    const name = c.name || c.candidate_name || 'Candidate';
+    const row = el('li', { class: 'cand-row' }, [
+      el('span', { class: 'cand-name' }, [
+        partyPill(c.party),
+        el('span', { text: name }),
+      ]),
+    ]);
+    const fin = candidateFinance(c);
+    if (fin) row.appendChild(el('span', { class: 'cand-finance', text: fin }));
+    list.appendChild(row);
+  }
+  const src = race.candidatesSource;
+  const block = el('div', { class: 'cand-block' }, [list]);
+  if (src && src.name) {
+    block.appendChild(el('div', { class: 'cand-source' }, [
+      src.url
+        ? el('a', { href: src.url, target: '_blank', rel: 'noopener', text: 'Source: ' + src.name })
+        : el('span', { text: 'Source: ' + src.name }),
+    ]));
+  }
+  return block;
+}
+
+// Formats receipts / cash-on-hand when present (tolerant of a few field names).
+function candidateFinance(c) {
+  const receipts = c.receipts ?? c.total_receipts;
+  const cash = c.cash_on_hand ?? c.cash_on_hand_end_period ?? c.cashOnHand;
+  const parts = [];
+  if (Number.isFinite(Number(receipts)) && receipts != null) parts.push('$' + fmt(Math.round(Number(receipts))) + ' raised');
+  if (Number.isFinite(Number(cash)) && cash != null) parts.push('$' + fmt(Math.round(Number(cash))) + ' cash');
+  return parts.join(' · ');
+}
+
+function renderBalanceBar(byParty) {
+  const r = byParty.R || 0, d = byParty.D || 0, open = byParty.Open || 0;
+  const total = r + d + open || 1;
+  const seg = (n, cls, label) => n > 0
+    ? el('div', { class: 'balance-seg ' + cls, style: `width:${(n / total) * 100}%`, title: `${label}: ${n}` })
+    : null;
+  const bar = el('div', {
+    class: 'balance-bar', role: 'img',
+    'aria-label': `Current U.S. House delegation: ${r} Republican, ${d} Democratic, ${open} open`,
+  }, [seg(r, 'r', 'Republican-held'), seg(d, 'd', 'Democratic-held'), seg(open, 'open', 'Open')]);
+
+  const legendItem = (cls, label, n) => el('span', { class: 'balance-key' }, [
+    el('span', { class: 'balance-dot ' + cls, 'aria-hidden': 'true' }),
+    el('span', { text: `${label} ${n}` }),
+  ]);
+  const legend = el('div', { class: 'balance-legend' }, [
+    legendItem('r', 'R-held', r),
+    legendItem('d', 'D-held', d),
+    legendItem('open', 'Open', open),
+  ]);
+  return el('div', {}, [
+    el('div', { class: 'balance-caption muted', text: 'Current delegation (seats up in 2026)' }),
+    bar, legend,
+  ]);
+}
+
+function renderRaceFilter(byParty) {
+  const r = byParty.R || 0, d = byParty.D || 0, open = byParty.Open || 0;
+  const total = r + d + open;
+  const options = [
+    { val: 'all', label: `All (${total})` },
+    { val: 'R', label: `R-held (${r})` },
+    { val: 'D', label: `D-held (${d})` },
+    { val: 'open', label: `Open (${open})` },
+  ];
+  const seg = el('div', { class: 'seg', role: 'group', 'aria-label': 'Filter House districts' });
+  for (const o of options) {
+    const b = el('button', {
+      class: 'seg-btn' + (o.val === racesState.filter ? ' active' : ''),
+      type: 'button', 'aria-pressed': o.val === racesState.filter ? 'true' : 'false', text: o.label,
+    });
+    b.addEventListener('click', () => {
+      if (racesState.filter === o.val) return;
+      racesState.filter = o.val;
+      // Re-render only the filter buttons' active state and the grid.
+      seg.querySelectorAll('.seg-btn').forEach((btn, i) => {
+        const active = options[i].val === o.val;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      renderHouseGrid();
+    });
+    seg.appendChild(b);
+  }
+  return seg;
+}
+
+function houseMatchesFilter(race) {
+  const f = racesState.filter;
+  if (f === 'all') return true;
+  if (f === 'open') return raceIsOpen(race);
+  if (raceIsOpen(race)) return false;
+  return race.incumbent && race.incumbent.party === f;
+}
+
+function renderHouseGrid() {
+  const grid = $('#racesGrid');
+  const data = racesState.data;
+  if (!grid || !data) return;
+  const houses = [...data.house]
+    .sort((a, b) => (a.district || 0) - (b.district || 0))
+    .filter(houseMatchesFilter);
+
+  const cards = houses.map(renderDistrictCard);
+  if (cards.length === 0) {
+    grid.replaceChildren(el('div', { class: 'races-empty muted', text: 'No districts match this filter.' }));
+  } else {
+    grid.replaceChildren(...cards);
+  }
+}
+
+function renderDistrictCard(race) {
+  const open = raceIsOpen(race);
+  const label = `TX-${String(race.district).padStart(2, '0')}`;
+  const expandable = hasCandidates(race);
+
+  const top = el('div', { class: 'district-top' }, [
+    el('span', { class: 'district-id', text: label }),
+    partyPill(open ? 'Open' : race.incumbent.party),
+  ]);
+  const who = open
+    ? el('div', { class: 'district-who open', text: 'OPEN SEAT' })
+    : el('div', { class: 'district-who', text: surname(race.incumbent.name) });
+
+  const children = [top, who];
+
+  // Build an accessible aria-label that conveys everything color/abbreviation does.
+  const ariaParts = [label.replace('-', ' '), open ? 'open seat, no incumbent'
+    : `${partyMeta(race.incumbent.party).name} incumbent ${race.incumbent.name}`];
+
+  let card;
+  if (expandable) {
+    // Expandable card: a single native <button> toggles a candidates panel. Using
+    // a button (not a tabindex'd div wrapping interactive children) keeps axe happy
+    // (no nested-interactive) and gives free keyboard support.
+    const panel = el('div', { class: 'district-candidates', hidden: 'hidden' }, [renderCandidateBlock(race)]);
+    const btn = el('button', {
+      class: 'district-toggle', type: 'button',
+      'aria-expanded': 'false',
+      'aria-label': ariaParts.join(', ') + `, ${race.candidates.length} declared — show candidates`,
+    }, [top, who, el('span', { class: 'district-caret', 'aria-hidden': 'true', text: '▾' })]);
+    btn.addEventListener('click', () => {
+      const openNow = panel.hasAttribute('hidden');
+      if (openNow) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', 'hidden');
+      btn.setAttribute('aria-expanded', openNow ? 'true' : 'false');
+      card.classList.toggle('expanded', openNow);
+    });
+    card = el('div', { class: 'race-card district-card' + (open ? ' open' : '') + ' has-candidates', role: 'listitem' },
+      [btn, panel]);
+  } else {
+    // Non-interactive card: a plain list item (no tabindex/role=button) so screen
+    // readers don't announce a control that does nothing.
+    card = el('div', {
+      class: 'race-card district-card' + (open ? ' open' : ''),
+      role: 'listitem', 'aria-label': ariaParts.join(', '),
+    }, children);
+  }
+  return card;
+}
+
+// "Class 2" -> "Class II" for a more formal seat label; leaves other text alone.
+function roman(seat) {
+  const map = { '1': 'I', '2': 'II', '3': 'III' };
+  return String(seat).replace(/\b([123])\b/, (_, n) => map[n] || n);
 }
 
 /* ----------------------------------------------------------- shareable state (#5) */

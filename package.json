@@ -8,11 +8,14 @@
     "build-data": "node scripts/build-data.mjs",
     "validate": "node scripts/validate.mjs",
     "serve": "python3 -m http.server 8000",
-    "smoke": "node .claude/skills/run-election-dashboard/driver.mjs"
+    "smoke": "node .claude/skills/run-election-dashboard/driver.mjs",
+    "build-races": "node scripts/build-races.mjs",
+    "enrich-races": "node scripts/enrich-races.mjs"
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
     "axe-core": "^4.11.4",
+    "js-yaml": "^4.1.1",
     "jsdom": "^24.1.3"
   }
 }
