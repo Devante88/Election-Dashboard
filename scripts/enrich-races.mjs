@@ -21,7 +21,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FILE = path.join(ROOT, 'data/races-2026.json');
-const FEC = 'https://api.open.fec.gov/v1';
+// Override for testing against a mock/mirror; defaults to the real OpenFEC API.
+const FEC = process.env.FEC_BASE_URL || 'https://api.open.fec.gov/v1';
 const ELECTION_YEAR = 2026;
 const STATE = 'TX';
 
