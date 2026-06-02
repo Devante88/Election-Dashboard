@@ -28,6 +28,9 @@ jobs:
           cp index.html _site/
           cp -r assets _site/
           cp -r data _site/
+          # Research briefs (pre-rendered HTML) published under /research/,
+          # so they never collide with the dashboard's root index.html.
+          if [ -d public ]; then mkdir -p _site/research && cp -r public/* _site/research/; fi
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
