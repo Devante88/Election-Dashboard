@@ -20,9 +20,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const FILE = path.join(ROOT, 'data/races-2026.json');
-// Override for testing against a mock/mirror; defaults to the real OpenFEC API.
+// Overridable so tests can enrich a throwaway fixture instead of the real file.
+const FILE = process.env.RACES_FILE || path.join(ROOT, 'data/races-2026.json');
+// Overridable for testing against a mock/mirror; default to the real endpoints.
 const FEC = process.env.FEC_BASE_URL || 'https://api.open.fec.gov/v1';
+const CIVIC = process.env.CIVIC_BASE_URL || 'https://www.googleapis.com/civicinfo/v2';
 const ELECTION_YEAR = 2026;
 const STATE = 'TX';
 
@@ -38,14 +40,23 @@ async function getJSON(url, label, attempt = 0) {
   const res = await fetch(url, { redirect: 'follow' });
   if (res.status === 429 || res.status === 503) {
     if (attempt >= 4) throw new Error(`${label}: rate-limited (HTTP ${res.status}) after retries`);
-    const ra = Number(res.headers.get('retry-after'));
-    const wait = Number.isFinite(ra) && ra > 0 ? ra * 1000 : Math.min(30000, 1000 * 2 ** attempt);
+    const wait = retryAfterMs(res.headers.get('retry-after')) ?? Math.min(30000, 1000 * 2 ** attempt);
     console.warn(`  · ${label}: HTTP ${res.status}; waiting ${Math.round(wait / 1000)}s then retrying`);
     await sleep(wait);
     return getJSON(url, label, attempt + 1);
   }
   if (!res.ok) throw new Error(`${label}: HTTP ${res.status}`);
   return res.json();
+}
+
+// Retry-After is either delta-seconds or an HTTP-date — handle both. Returns ms,
+// or null if absent/unparseable (caller falls back to exponential backoff).
+function retryAfterMs(header) {
+  if (!header) return null;
+  const secs = Number(header);
+  if (Number.isFinite(secs) && secs >= 0) return secs * 1000;
+  const when = Date.parse(header);
+  return Number.isFinite(when) ? Math.max(0, when - Date.now()) : null;
 }
 
 // All FEC candidates for a TX office in the 2026 cycle, with their finance totals.
@@ -71,6 +82,7 @@ async function fecCandidates({ office, district }) {
     pages = data.pagination?.pages || 1;
     page++;
   } while (page <= pages && page <= 10); // hard cap: 1000 candidates/race is already absurd
+  if (pages > 10) console.warn(`  ! ${office} ${district ?? ''}: ${pages} pages of candidates; capped at 1000 (truncated).`);
 
   const out = [];
   for (const c of results) {
@@ -128,7 +140,7 @@ const PARTY_FROM_CIVIC = p => {
 // Map office-key -> [{name, party}], or null if unavailable. Complements FEC.
 async function civicByOffice() {
   if (!CIVIC_KEY) return null;
-  const url = `https://www.googleapis.com/civicinfo/v2/voterinfo?key=${CIVIC_KEY}` +
+  const url = `${CIVIC}/voterinfo?key=${CIVIC_KEY}` +
     `&address=${encodeURIComponent('Texas')}&electionId=${ELECTION_YEAR}&returnAllAvailableData=true`;
   let data;
   try { data = await getJSON(url, 'Google Civic'); }
@@ -228,4 +240,10 @@ async function main() {
   if (failures.length) process.exitCode = 1; // signal partial failure to CI
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+// Exported for unit tests; pure helpers with no I/O.
+export { nameKey, mergeCivic, PARTY_FROM_CIVIC, retryAfterMs, clearCandidates };
+
+// Run main() only when executed directly (not when imported by a test).
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch(err => { console.error(err); process.exit(1); });
+}

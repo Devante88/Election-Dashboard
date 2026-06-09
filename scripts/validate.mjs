@@ -148,6 +148,8 @@ async function racesCheck() {
     ok(dates.every((d, i) => i === 0 || d >= dates[i - 1]), 'finance snapshots are chronological');
     ok(snaps.every(s => s.totals.receipts === 0 ? true : s.hasData === true),
       'no finance totals without hasData (nothing invented)');
+    ok(snaps.every(s => s.partial === undefined || typeof s.partial === 'boolean'),
+      'finance snapshots carry a boolean partial flag when present');
   } catch {
     console.log('  skip  data/finance-history.json not present yet (run `npm run snapshot-finance`)');
   }

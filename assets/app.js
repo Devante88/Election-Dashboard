@@ -67,11 +67,13 @@ function colorForMargin(m) {
 function colorForMetric(m, ctx) {
   if (state.mapMetric === 'margin') return colorForMargin(m.marginPct);
   if (state.mapMetric === 'turnout') {
-    const span = ctx.maxTurnout - ctx.minTurnout || 1;
+    const span = ctx.maxTurnout - ctx.minTurnout;
+    if (!(span > 0)) return rgb(SEQ_LO);           // degenerate / empty -> flat
     return rgb(lerp(SEQ_LO, SEQ_HI, (m.total - ctx.minTurnout) / span));
   }
   // other-party share
-  const span = ctx.maxOther || 1;
+  const span = ctx.maxOther;
+  if (!(span > 0)) return rgb(SEQ_LO);
   return rgb(lerp(SEQ_LO, SEQ_HI, Math.min(1, m.otherPct / span)));
 }
 
@@ -269,12 +271,14 @@ function renderMap() {
     if (rec) byFips.set(c.fips, { name: c.name, m: metrics(rec) });
   }
   // Per-cycle scaling context for the sequential (turnout/other) metrics.
+  // Guard the degenerate empty-data case so Math.min/max of [] (±Infinity) can't
+  // poison the color scale or print "Infinity" in the legend.
   const all = [...byFips.values()].map(v => v.m);
-  const ctx = {
+  const ctx = all.length ? {
     minTurnout: Math.min(...all.map(m => m.total)),
     maxTurnout: Math.max(...all.map(m => m.total)),
     maxOther: Math.max(5, ...all.map(m => m.otherPct)),
-  };
+  } : { minTurnout: 0, maxTurnout: 0, maxOther: 0 };
 
   const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'xMidYMid meet' });
   for (const county of state.geo.counties) {
@@ -366,8 +370,11 @@ function renderMapLegend(ctx) {
   if (state.mapMetric === 'margin') {
     const grad = `linear-gradient(to right, ${colorForMargin(-40)}, ${colorForMargin(0)}, ${colorForMargin(40)})`;
     const p = PALETTES[state.palette] || PALETTES.rdbu;
-    legend.appendChild(el('span', { text: `${p.demName.includes('Purple') ? 'D' : 'D'}+40` }));
-    legend.appendChild(el('span', { class: 'bar', style: `background:${grad}` }));
+    // Self-documenting for the color-blind palette: the bar's title spells out the
+    // color→party mapping (e.g. "Purple = Democratic, Orange = Republican").
+    legend.appendChild(el('span', { text: 'D+40' }));
+    legend.appendChild(el('span', { class: 'bar', style: `background:${grad}`,
+      title: `${p.demName} = Democratic, ${p.repName} = Republican` }));
     legend.appendChild(el('span', { text: 'R+40' }));
   } else {
     const grad = `linear-gradient(to right, ${rgb(SEQ_LO)}, ${rgb(SEQ_HI)})`;
@@ -801,7 +808,7 @@ function renderRaces() {
     el('div', {}, [
       el('div', { class: 'races-eyebrow', text: 'On the ballot' }),
       el('h2', { class: 'races-title', text: '2026 Texas Races' }),
-      el('div', { class: 'races-sub', text: subFull }),
+      el('div', { class: 'races-sub', text: subFull + (m.generated ? ` · updated ${m.generated}` : '') }),
     ]),
   ]);
   if (m.dataNote) head.appendChild(el('p', { class: 'races-note', text: m.dataNote }));
@@ -872,6 +879,15 @@ const usd = n => {
   if (a >= 1000) return sign + '$' + Math.round(a / 1e3) + 'K';
   return sign + '$' + Math.round(a).toLocaleString('en-US');
 };
+// Like usd(), but shows "—" for an unknown (null/undefined) figure rather than a
+// misleading "$0".
+const usdOrDash = n => (typeof n === 'number' && Number.isFinite(n)) ? usd(n) : '—';
+// Short date from an ISO timestamp (for "as of …" freshness labels).
+const fmtDate = iso => {
+  const d = new Date(iso);
+  return Number.isFinite(d.getTime())
+    ? d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+};
 
 // Finance view: pulls current finance from every race's candidates[], plus the
 // dated history file for a trend. Renders empty-safe — until FEC data exists it
@@ -879,7 +895,10 @@ const usd = n => {
 function renderFinance(data, history) {
   const cands = [...data.senate, ...data.house, ...(data.stateLocal || [])]
     .flatMap(r => (r.candidates || []).map(c => ({ ...c, office: r.office, district: r.district })));
-  const funded = cands.filter(c => c.finance && typeof c.finance.receipts === 'number');
+  // A candidate counts as "funded" if ANY finance figure is a real number —
+  // include someone reporting cash-on-hand but null receipts (matches the snapshot).
+  const numeric = v => typeof v === 'number' && Number.isFinite(v);
+  const funded = cands.filter(c => c.finance && (numeric(c.finance.receipts) || numeric(c.finance.cashOnHand)));
 
   const wrap = el('div', { class: 'finance' }, [
     el('h3', { class: 'races-h', text: 'Campaign finance' }),
@@ -909,10 +928,11 @@ function renderFinance(data, history) {
       el('span', { class: 'balance-dot ' + (p === 'R' ? 'r' : p === 'D' ? 'd' : 'open') }),
       el('span', { text: `${p}: ${usd(byParty[p])} raised` }),
     ])));
-  wrap.append(
-    el('div', { class: 'fin-summary' }, [
-      el('span', { text: `${usd(total)} raised across ${funded.length} candidates` }),
-    ]), bar, legend);
+  // Data-freshness: when the live FEC layer was last pulled.
+  const asOf = data.meta && data.meta.enrichment && data.meta.enrichment.when;
+  const summaryKids = [el('span', { text: `${usd(total)} raised across ${funded.length} candidates` })];
+  if (asOf) summaryKids.push(el('span', { class: 'fin-asof', text: ` · as of ${fmtDate(asOf)}` }));
+  wrap.append(el('div', { class: 'fin-summary' }, summaryKids), bar, legend);
 
   // Leaderboard: top fundraisers.
   const top = funded.slice().sort((a, b) => (b.finance.receipts || 0) - (a.finance.receipts || 0)).slice(0, 8);
@@ -922,14 +942,14 @@ function renderFinance(data, history) {
       partyPill(c.party),
       el('span', { class: 'fin-name', text: c.name }),
       el('span', { class: 'fin-office', text: c.office === 'U.S. House' ? `TX-${c.district}` : c.office }),
-      el('span', { class: 'fin-amt', text: usd(c.finance.receipts), title: 'Total receipts' }),
-      el('span', { class: 'fin-coh', text: usd(c.finance.cashOnHand) + ' COH', title: 'Cash on hand' }),
+      el('span', { class: 'fin-amt', text: usdOrDash(c.finance.receipts), title: 'Total receipts' }),
+      el('span', { class: 'fin-coh', text: (Number.isFinite(c.finance.cashOnHand) ? usd(c.finance.cashOnHand) + ' COH' : '— COH'), title: 'Cash on hand' }),
     ]));
   }
   wrap.append(el('h4', { class: 'sl-group-h', text: 'Top fundraisers' }), list);
 
-  // Trend over time (needs ≥2 dated snapshots with data).
-  const snaps = ((history && history.snapshots) || []).filter(s => s.hasData);
+  // Trend over time (needs ≥2 dated snapshots with data; skip partial/incomplete days).
+  const snaps = ((history && history.snapshots) || []).filter(s => s.hasData && !s.partial);
   if (snaps.length >= 2) {
     wrap.append(el('h4', { class: 'sl-group-h', text: 'Total raised over time' }), financeTrend(snaps));
   } else if (history) {
