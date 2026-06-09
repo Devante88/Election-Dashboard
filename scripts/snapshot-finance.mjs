@@ -30,12 +30,9 @@ const centralDay = d => new Intl.DateTimeFormat('en-CA', {
   timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit',
 }).format(d); // en-CA => YYYY-MM-DD
 
-async function main() {
-  if (!existsSync(RACES)) {
-    console.error('data/races-2026.json missing — run `npm run build-races` first.');
-    process.exit(1);
-  }
-  const races = JSON.parse(await readFile(RACES, 'utf8'));
+// Pure: compute one dated finance snapshot from a races object (no I/O) so it's
+// unit-testable.
+export function buildSnapshot(races, now = new Date()) {
   const allRaces = [...(races.senate || []), ...(races.house || []), ...(races.stateLocal || [])];
   const cands = allRaces.flatMap(r => (r.candidates || []).map(c => ({ ...c, office: r.office })));
   // Include a candidate if ANY finance figure is a real number (receipts OR
@@ -53,11 +50,15 @@ async function main() {
     byParty[p].candidates += 1;
   }
 
-  const snapshot = {
-    date: centralDay(new Date()),                      // Central (Texas) day key
-    when: new Date().toISOString(),
+  const enr = races.meta && races.meta.enrichment;
+  return {
+    date: centralDay(now),                             // Central (Texas) day key
+    when: now.toISOString(),
     hasData: withFinance.length > 0,
-    source: races.meta?.enrichment?.source || null,
+    // True when enrichment was attempted but did not fully complete, so the trend
+    // can flag/skip an incomplete day rather than treat it as authoritative.
+    partial: !!(enr && enr.ok === false),
+    source: (enr && enr.source) || null,
     totals: {
       receipts: sum(withFinance, c => c.finance.receipts),
       cashOnHand: sum(withFinance, c => c.finance.cashOnHand),
@@ -72,6 +73,15 @@ async function main() {
       .slice(0, 10)
       .map(c => ({ name: c.name, party: c.party, office: c.office, receipts: c.finance.receipts, cashOnHand: c.finance.cashOnHand })),
   };
+}
+
+async function main() {
+  if (!existsSync(RACES)) {
+    console.error('data/races-2026.json missing — run `npm run build-races` first.');
+    process.exit(1);
+  }
+  const races = JSON.parse(await readFile(RACES, 'utf8'));
+  const snapshot = buildSnapshot(races);
 
   let hist = { meta: {}, snapshots: [] };
   if (existsSync(HIST)) {
@@ -95,6 +105,12 @@ async function main() {
     `$${snapshot.totals.receipts.toLocaleString('en-US')} raised total. ` +
     `History now ${hist.snapshots.length} snapshot(s).`);
   if (!snapshot.hasData) console.log('  (no FEC finance yet — recorded an empty snapshot; nothing invented)');
+  if (snapshot.partial) console.log('  (enrichment was incomplete — snapshot flagged partial:true)');
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+export { centralDay };
+
+// Run main() only when executed directly (not when imported by a test).
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch(err => { console.error(err); process.exit(1); });
+}

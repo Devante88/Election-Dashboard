@@ -324,4 +324,10 @@ async function main() {
   console.log('Wrote data/elections.json and data/tx-counties-geo.json');
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+// Exported for unit tests (pure parsers, no I/O).
+export { splitCSVLine, parseCSV };
+
+// Run main() only when executed directly (not when imported by a test).
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch(err => { console.error(err); process.exit(1); });
+}

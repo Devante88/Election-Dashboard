@@ -24,6 +24,17 @@ jobs:
       - name: Validate data and render
         run: npm run validate
 
+      # Unit + integration tests for the data-pipeline scripts (mock FEC, etc.).
+      - name: Run tests
+        run: npm test
+
+      # Fail if the committed research HTML is stale vs docs/*.md.
+      - name: Docs build in sync
+        run: |
+          node scripts/build-docs.mjs
+          git diff --exit-code -- public/ \
+            || { echo "::error::public/ is stale — run 'npm run build-docs' and commit."; exit 1; }
+
       # Serve the site, drive the real app.js headlessly, screenshot the map.
       - name: Smoke-test the running app
         run: npm run smoke -- --out=screenshots
