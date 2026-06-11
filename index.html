@@ -75,7 +75,10 @@
           <h2>County results</h2>
           <p class="muted" id="tableCaption"></p>
         </div>
-        <input type="search" id="search" class="search" placeholder="Search county…" aria-label="Search county" />
+        <div class="table-actions">
+          <input type="search" id="search" class="search" placeholder="Search county…" aria-label="Search county" />
+          <button id="csvBtn" class="csv-btn" type="button" disabled>Download CSV</button>
+        </div>
       </div>
       <div class="table-scroll">
         <table id="countyTable" class="county-table">
@@ -87,7 +90,7 @@
   </main>
 
   <div id="drawer-backdrop" class="drawer-backdrop"></div>
-  <aside id="drawer" class="drawer" aria-label="County detail" hidden></aside>
+  <aside id="drawer" class="drawer" role="dialog" aria-modal="true" aria-label="County detail" hidden></aside>
 
   <footer class="site-footer">
     <div class="wrap">

@@ -14,12 +14,12 @@ SVG county map. Data is fetched once by a reproducible script and committed as J
 - **County choropleth map** — all 254 Texas counties. Recolor by **margin, turnout, or third-party share**, in a default red/blue or a **color-blind-safe** orange/purple palette. Every county is **keyboard-focusable** (Tab) and labeled for screen readers; detail shows on hover, keyboard focus, **and touch**.
 - **County detail drawer** — click/tap/Enter any county (on the map or in the table) for its **2012–2024 margin sparkline** and per-cycle numbers.
 - **Statewide trend, summary, highlights** — vote share & margin across cycles; closest races, largest R/D margins, highest turnout, biggest swing.
-- **County results table** — sortable and searchable across every county.
+- **County results table** — sortable and searchable across every county, with an inline diverging margin bar per row and a **Download CSV** button that exports exactly the filtered/sorted view.
 - **Shareable views** — the selected year, search, sort, map metric, palette, and open county are encoded in the URL (`#year=2020&metric=turnout&county=48201`), so any view is bookmarkable and survives reload.
 
 Switch cycles with the year picker in the header; every panel updates.
 
-Accessibility & robustness: the map is keyboard-, touch-, and screen-reader-accessible, with a color-blind-safe palette; the trend axis scales to the data (no cycle can overflow); tooltips/drawer are built from DOM nodes (not `innerHTML`), so data can't inject markup; and `npm run validate` runs an **axe-core** audit that fails on serious/critical violations.
+Accessibility & robustness: the map is keyboard-, touch-, and screen-reader-accessible, with a color-blind-safe palette; the year picker follows the tablist keyboard pattern (arrow keys / Home / End); the county drawer is a proper dialog (focus moves in on open, is trapped while open, and returns to the opener on close); highlight county names are buttons that open the drawer; the trend axis scales to the data (no cycle can overflow); tooltips/drawer are built from DOM nodes (not `innerHTML`), so data can't inject markup; animations honor `prefers-reduced-motion`; and `npm run validate` runs an **axe-core** audit that fails on serious/critical violations.
 
 ## The data is real
 
