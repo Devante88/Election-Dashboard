@@ -168,7 +168,10 @@ async function renderCheck(data, geo) {
   const races = await readOpt('data/races-2026.json');
   const finance = await readOpt('data/finance-history.json');
 
-  const dom = new JSDOM(html, { runScripts: 'outside-only', pretendToBeVisual: true });
+  // A real URL so history.replaceState works like a browser's (on the default
+  // about:blank it throws, sending syncHash down the location.hash fallback,
+  // which fires spurious hashchange re-renders mid-test).
+  const dom = new JSDOM(html, { runScripts: 'outside-only', pretendToBeVisual: true, url: 'http://localhost/' });
   const { window } = dom;
   window.fetch = async url => {
     const ok = !(url.includes('races-2026') && !races) && !(url.includes('finance-history') && !finance);
@@ -216,12 +219,64 @@ async function renderCheck(data, geo) {
 
   // County drawer (#4): opening a county shows a sparkline + per-cycle margins.
   const firstRow = doc.querySelector('#tableBody tr.row-clickable');
+  firstRow.focus(); // so the focus-restore check below has a real opener
   firstRow.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await new Promise(r => setTimeout(r, 20));
   const drawer = doc.querySelector('#drawer');
   ok(drawer && !drawer.hidden, 'county drawer opens on row click');
   ok(doc.querySelector('#drawer .sparkline'), 'drawer shows a margin sparkline');
   ok(doc.querySelectorAll('#drawer .drawer-cycles .cyc').length === 4, 'drawer lists all 4 cycles');
+
+  // Dialog focus management: focus moves into the drawer on open and returns
+  // to the opener when Escape closes it.
+  ok(doc.activeElement === doc.querySelector('#drawer .drawer-close'), 'drawer takes keyboard focus on open');
+  doc.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  await new Promise(r => setTimeout(r, 20));
+  ok(drawer.hidden, 'Escape closes the drawer');
+  ok(doc.activeElement === firstRow, 'focus returns to the opener on close');
+
+  // Highlights: county names are buttons that open the drawer.
+  const hlBtn = doc.querySelector('#highlights .hl-name-btn');
+  ok(!!hlBtn, 'highlight county names are buttons');
+  hlBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 20));
+  ok(!drawer.hidden, 'clicking a highlight opens the drawer');
+  doc.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  await new Promise(r => setTimeout(r, 20));
+
+  // Year picker keyboard nav (tablist pattern): arrow keys move the selection.
+  const picker = doc.querySelector('#yearPicker');
+  picker.querySelector('.year-btn.active').dispatchEvent(
+    new window.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+  await new Promise(r => setTimeout(r, 20));
+  ok(picker.querySelector('.year-btn.active').textContent === '2020', 'ArrowLeft selects the previous cycle');
+  picker.querySelector('.year-btn.active').dispatchEvent(
+    new window.KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+  await new Promise(r => setTimeout(r, 20));
+  ok(picker.querySelector('.year-btn.active').textContent === '2024', 'End selects the latest cycle');
+
+  // Margin bars render in the table's Margin column.
+  ok(doc.querySelectorAll('#tableBody .mbar').length === 254, 'margin bars render for all 254 rows');
+
+  // CSV export: enabled after load, and the download matches the table.
+  const csvBtn = doc.querySelector('#csvBtn');
+  ok(csvBtn && csvBtn.disabled === false, 'CSV export button enabled after load');
+  // jsdom's Blob has no .text(); capture the parts at construction instead.
+  let csvParts = null;
+  const RealBlob = window.Blob;
+  window.Blob = class extends RealBlob {
+    constructor(parts, opts) { super(parts, opts); csvParts = parts; }
+  };
+  window.URL.createObjectURL = () => 'blob:test';
+  window.URL.revokeObjectURL = () => {};
+  window.HTMLAnchorElement.prototype.click = function () {};
+  csvBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  const csv = (csvParts || []).join('');
+  const lines = csv.trim().split('\n');
+  ok(lines[0] === 'county,fips,winner,rep_votes,rep_pct,dem_votes,dem_pct,other_votes,total_votes,margin_pct',
+    'CSV header has the expected columns');
+  ok(lines.length === 255, `CSV has 254 data rows (got ${lines.length - 1})`);
+  window.Blob = RealBlob;
 
   // Metric toggle recolors the map without changing path count.
   const turnoutBtn = [...doc.querySelectorAll('#mapControls .seg-btn')].find(b => b.textContent === 'Turnout');

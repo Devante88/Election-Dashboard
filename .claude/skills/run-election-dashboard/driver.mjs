@@ -50,7 +50,7 @@ function startServer() {
 async function waitReady(timeoutMs = 15000) {
   const t0 = Date.now();
   while (Date.now() - t0 < timeoutMs) {
-    try { if ((await fetch(BASE + 'index.html')).ok) return; } catch {}
+    try { const r = await fetch(BASE + 'index.html'); await r.arrayBuffer(); if (r.ok) return; } catch {}
     await sleep(200);
   }
   throw new Error(`server not ready at ${BASE}`);
@@ -107,6 +107,10 @@ async function smoke() {
       ['data/tx-counties-geo.json', 'application/json'],
     ]) {
       const r = await fetch(BASE + p);
+      // Drain the body: an unconsumed response leaves undici's parser paused,
+      // and when the server closes the socket newer Node 22.x crashes with
+      // "AssertionError: assert(!this.paused)" (seen in CI on 22.23.0).
+      await r.arrayBuffer();
       check(r.ok && (r.headers.get('content-type') || '').includes(ct),
         `GET /${p} -> ${r.status} ${r.headers.get('content-type')}`);
     }

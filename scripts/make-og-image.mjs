@@ -75,3 +75,9 @@ svg.appendChild(text(62, 560, 'Live countdown to the 2026 general election', 24,
 const png = new Resvg(svg.outerHTML, { background: '#0d1320', fitTo: { mode: 'width', value: W } }).render().asPng();
 await writeFile(path.join(ROOT, 'assets/og-image.png'), png);
 console.log(`Wrote assets/og-image.png (${png.length} bytes)`);
+
+// app.js starts a 1-second countdown setInterval; those are real Node timers,
+// so without an explicit exit this process hangs forever (it burned the full
+// 6-hour Actions job limit in CI). Close the window and exit deliberately.
+window.close();
+process.exit(0);

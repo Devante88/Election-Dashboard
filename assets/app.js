@@ -94,6 +94,8 @@ async function init() {
     state.geo = geo;
     state.year = data.meta.latestYear;
     $('#search').disabled = false;
+    const csv = $('#csvBtn');
+    if (csv) csv.disabled = false;
     const openFips = applyHash();          // restore view from URL (#5)
     renderStatic();
     renderYearPicker();
@@ -129,6 +131,13 @@ function renderStatic() {
   $('#sources').innerHTML = 'Data: ' + links;
 }
 
+function setYear(y) {
+  state.year = y;
+  syncHash();
+  renderYearPicker();
+  renderAll();
+}
+
 function renderYearPicker() {
   const box = $('#yearPicker');
   box.innerHTML = '';
@@ -137,10 +146,29 @@ function renderYearPicker() {
       class: 'year-btn' + (y === state.year ? ' active' : ''),
       type: 'button', role: 'tab',
       'aria-selected': y === state.year ? 'true' : 'false',
+      // Roving tabindex: only the selected tab is in the tab order; the rest are
+      // reached with arrow keys (standard tablist keyboard pattern).
+      tabindex: y === state.year ? '0' : '-1',
       text: String(y),
     });
-    b.addEventListener('click', () => { state.year = y; syncHash(); renderYearPicker(); renderAll(); });
+    b.addEventListener('click', () => setYear(y));
     box.appendChild(b);
+  }
+  if (!box.dataset.keynav) {
+    box.dataset.keynav = '1';
+    box.addEventListener('keydown', e => {
+      const years = state.data.meta.years;
+      const i = years.indexOf(state.year);
+      let next = null;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = years[Math.min(i + 1, years.length - 1)];
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = years[Math.max(i - 1, 0)];
+      else if (e.key === 'Home') next = years[0];
+      else if (e.key === 'End') next = years[years.length - 1];
+      if (next === null || next === state.year) return;
+      e.preventDefault();
+      setYear(next);
+      box.querySelector('.year-btn.active')?.focus(); // selection follows focus
+    });
   }
 }
 
@@ -400,8 +428,17 @@ function countyMetricsForYear(year) {
 function hlCard(title, items) {
   const ul = el('ul', { class: 'hl-list' });
   for (const it of items) {
+    // County names link to the detail drawer when we know the FIPS.
+    let name;
+    if (it.fips) {
+      name = el('button', { class: 'hl-name hl-name-btn', type: 'button', text: it.name,
+        'aria-label': `${it.name} County — open detail` });
+      name.addEventListener('click', () => openCounty(it.fips));
+    } else {
+      name = el('span', { class: 'hl-name', text: it.name });
+    }
     ul.appendChild(el('li', {}, [
-      el('span', { class: 'hl-name', text: it.name }),
+      name,
       el('span', { class: 'hl-val ' + (it.cls || ''), text: it.val }),
     ]));
   }
@@ -414,13 +451,13 @@ function renderHighlights() {
   wrap.innerHTML = '';
 
   const closest = [...rows].sort((a, b) => Math.abs(a.marginPct) - Math.abs(b.marginPct)).slice(0, 5)
-    .map(r => ({ name: r.name, val: marginLabel(r.marginPct), cls: r.winner === 'R' ? 'val-rep' : 'val-dem' }));
+    .map(r => ({ fips: r.fips, name: r.name, val: marginLabel(r.marginPct), cls: r.winner === 'R' ? 'val-rep' : 'val-dem' }));
   const reddest = [...rows].sort((a, b) => b.marginPct - a.marginPct).slice(0, 5)
-    .map(r => ({ name: r.name, val: marginLabel(r.marginPct), cls: 'val-rep' }));
+    .map(r => ({ fips: r.fips, name: r.name, val: marginLabel(r.marginPct), cls: 'val-rep' }));
   const bluest = [...rows].sort((a, b) => a.marginPct - b.marginPct).slice(0, 5)
-    .map(r => ({ name: r.name, val: marginLabel(r.marginPct), cls: 'val-dem' }));
+    .map(r => ({ fips: r.fips, name: r.name, val: marginLabel(r.marginPct), cls: 'val-dem' }));
   const turnout = [...rows].sort((a, b) => b.total - a.total).slice(0, 5)
-    .map(r => ({ name: r.name, val: fmt(r.total), cls: r.winner === 'R' ? 'val-rep' : 'val-dem' }));
+    .map(r => ({ fips: r.fips, name: r.name, val: fmt(r.total), cls: r.winner === 'R' ? 'val-rep' : 'val-dem' }));
 
   wrap.appendChild(hlCard('Closest races', closest));
   wrap.appendChild(hlCard('Largest Republican margins', reddest));
@@ -435,12 +472,13 @@ function renderHighlights() {
     const swings = rows
       .map(r => {
         const p = prevByFips.get(r.fips);
-        return p ? { name: r.name, delta: r.marginPct - p.marginPct } : null;
+        return p ? { fips: r.fips, name: r.name, delta: r.marginPct - p.marginPct } : null;
       })
       .filter(Boolean)
       .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
       .slice(0, 5)
       .map(r => ({
+        fips: r.fips,
         name: r.name,
         val: (r.delta >= 0 ? '→R ' : '→D ') + Math.abs(r.delta).toFixed(1),
         cls: r.delta >= 0 ? 'val-rep' : 'val-dem',
@@ -451,7 +489,7 @@ function renderHighlights() {
       .filter(r => Math.abs(r.marginPct) < 20)
       .sort((a, b) => b.total - a.total)
       .slice(0, 5)
-      .map(r => ({ name: r.name, val: marginLabel(r.marginPct), cls: r.winner === 'R' ? 'val-rep' : 'val-dem' }));
+      .map(r => ({ fips: r.fips, name: r.name, val: marginLabel(r.marginPct), cls: r.winner === 'R' ? 'val-rep' : 'val-dem' }));
     wrap.appendChild(hlCard('Competitive & populous', competitive));
   }
 }
@@ -485,20 +523,36 @@ function renderTableHeader() {
   }
 }
 
-function renderTable() {
-  // The #search handler can fire before init() resolves (or after it fails),
-  // when state.data is still null — bail rather than deref it.
-  if (!state.data) return;
-  renderTableHeader();
+// Filtered + sorted rows for the current view — shared by the table render and
+// the CSV export so the download always matches what's on screen.
+function currentTableRows() {
   const rows = countyMetricsForYear(state.year)
     .filter(r => r.name.toLowerCase().includes(state.query));
-
   const k = state.sortKey;
   rows.sort((a, b) => {
     const av = a[k], bv = b[k];
     if (k === 'name' || k === 'winner') return String(av).localeCompare(String(bv)) * state.sortDir;
     return (av - bv) * state.sortDir;
   });
+  return rows;
+}
+
+// Small diverging bar behind the margin number: fills right of center for R,
+// left for D, saturating at MARGIN_CAP like the map.
+function marginBar(marginPct) {
+  const half = Math.min(1, Math.abs(marginPct) / MARGIN_CAP) * 50;
+  const fill = el('span', { class: 'mbar-fill ' + (marginPct >= 0 ? 'r' : 'd') });
+  fill.style.width = half.toFixed(1) + '%';
+  fill.style[marginPct >= 0 ? 'left' : 'right'] = '50%';
+  return el('span', { class: 'mbar', 'aria-hidden': 'true' }, [fill]);
+}
+
+function renderTable() {
+  // The #search handler can fire before init() resolves (or after it fails),
+  // when state.data is still null — bail rather than deref it.
+  if (!state.data) return;
+  renderTableHeader();
+  const rows = currentTableRows();
 
   const body = $('#tableBody');
   body.innerHTML = '';
@@ -514,7 +568,10 @@ function renderTable() {
       el('td', { text: pct(r.demPct) }),
       el('td', { text: fmt(r.other) }),
       el('td', { text: fmt(r.total) }),
-      el('td', { class: marCls, text: marginLabel(r.marginPct) }),
+      el('td', { class: marCls + ' margin-cell' }, [
+        marginBar(r.marginPct),
+        el('span', { text: marginLabel(r.marginPct) }),
+      ]),
     ]);
     tr.addEventListener('click', () => openCounty(r.fips));
     tr.addEventListener('keydown', e => {
@@ -525,6 +582,27 @@ function renderTable() {
   $('#tableCaption').textContent = `${rows.length} of ${state.data.meta.countyCount} counties · ${state.year}`;
 }
 
+/* ----------------------------------------------------------- CSV export */
+// Downloads the table exactly as currently filtered and sorted.
+function exportCSV() {
+  if (!state.data) return;
+  const esc = v => (/[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v));
+  const header = ['county', 'fips', 'winner', 'rep_votes', 'rep_pct', 'dem_votes', 'dem_pct',
+    'other_votes', 'total_votes', 'margin_pct'];
+  const lines = [header.join(',')];
+  for (const r of currentTableRows()) {
+    lines.push([r.name, r.fips, r.winner, r.gop, r.gopPct.toFixed(2), r.dem, r.demPct.toFixed(2),
+      r.other, r.total, r.marginPct.toFixed(2)].map(esc).join(','));
+  }
+  const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = el('a', { href: url, download: `texas-${state.year}-county-results.csv` });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 /* ----------------------------------------------------------- county drawer (#4) */
 // Per-county detail with a 2012–2024 margin sparkline. Pure front-end — the
 // multi-cycle data is already in elections.json.
@@ -532,9 +610,14 @@ function countyByFips(fips) {
   return state.data.counties.find(c => c.fips === fips);
 }
 
+// Where keyboard focus was before the drawer opened, restored on close so a
+// keyboard user isn't dumped back at the top of the page.
+let drawerReturnFocus = null;
+
 function openCounty(fips) {
   const c = countyByFips(fips);
   if (!c) return;
+  const wasClosed = !state.county;
   state.county = fips;
   syncHash();
   document.querySelectorAll('#map .county').forEach(p =>
@@ -576,6 +659,23 @@ function openCounty(fips) {
   drawer.classList.add('open');
   const bd = $('#drawer-backdrop');
   if (bd) bd.classList.add('show');
+
+  // Dialog focus management: capture the trigger only on the closed→open
+  // transition (switching counties keeps the original return target), then
+  // move focus into the drawer.
+  if (wasClosed) drawerReturnFocus = document.activeElement;
+  drawer.querySelector('.drawer-close')?.focus();
+  if (!drawer.dataset.trap) {
+    drawer.dataset.trap = '1';
+    drawer.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      const focusables = drawer.querySelectorAll('button, a[href], input, select, [tabindex]:not([tabindex="-1"])');
+      if (!focusables.length) return;
+      const first = focusables[0], last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+  }
 }
 
 function drawerStat(label, val, cls) {
@@ -602,6 +702,7 @@ function marginSparkline(series) {
 }
 
 function closeCounty() {
+  const wasOpen = !!state.county;
   state.county = null;
   syncHash();
   const drawer = $('#drawer');
@@ -610,6 +711,18 @@ function closeCounty() {
   const bd = $('#drawer-backdrop');
   if (bd) bd.classList.remove('show');
   document.querySelectorAll('#map .county.selected').forEach(p => p.classList.remove('selected'));
+  // Hand focus back to whatever opened the drawer. If a re-render replaced the
+  // opener (year switch rebuilds the table/map), fall back to the current
+  // element for the same county.
+  if (wasOpen && drawerReturnFocus) {
+    let target = document.contains(drawerReturnFocus) ? drawerReturnFocus : null;
+    if (!target) {
+      const fips = drawerReturnFocus.getAttribute && drawerReturnFocus.getAttribute('data-fips');
+      if (fips) target = document.querySelector(`[data-fips="${fips}"]`);
+    }
+    target?.focus();
+  }
+  drawerReturnFocus = null;
 }
 
 /* ----------------------------------------------------------- upcoming election */
@@ -1252,6 +1365,7 @@ $('#search').addEventListener('input', e => {
   syncHash();
   renderTable();
 });
+$('#csvBtn')?.addEventListener('click', exportCSV);
 $('#drawer-backdrop')?.addEventListener('click', closeCounty);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCounty(); });
 
