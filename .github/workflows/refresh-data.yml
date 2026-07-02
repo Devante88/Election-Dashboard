@@ -14,6 +14,9 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    # Backstop: this job does a few minutes of work; never let a hung step burn
+    # the 6-hour runner limit (make-og-image.mjs once hung on a leaked timer).
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
